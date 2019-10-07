@@ -14,21 +14,21 @@
                     <snapshots>
                         <enabled>false</enabled>
                     </snapshots>
-                    <id>02-central</id>
-                    <name>libs-release</name>
-                    <url>http://artifactory-sdc.onsdigital.uk/artifactory/libs-release-local</url>
-                </repository>
-                <repository>
-                    <id>03-snapshots</id>
-                    <url>http://artifactory-sdc.onsdigital.uk/artifactory/libs-snapshot-local/</url>
+                    <id>maven-central</id>
+                    <name>Central Repository</name>
+                    <url>https://repo.maven.apache.org/maven2</url>
                 </repository>
                 <repository>
                     <snapshots>
                         <enabled>false</enabled>
                     </snapshots>
-                    <id>01-maven-central</id>
-                    <name>Central Repository</name>
-                    <url>https://repo.maven.apache.org/maven2</url>
+                    <id>central</id>
+                    <name>libs-release</name>
+                    <url>http://artifactory-sdc.onsdigital.uk/artifactory/libs-release-local</url>
+                </repository>
+                <repository>
+                    <id>snapshots</id>
+                    <url>http://artifactory-sdc.onsdigital.uk/artifactory/libs-snapshot-local/</url>
                 </repository>
             </repositories>
         </profile>
