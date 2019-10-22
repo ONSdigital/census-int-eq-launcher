@@ -11,6 +11,7 @@ public interface EqLaunchService {
       Channel channel,
       CaseContainerDTO caseContainer,
       String userId,
+      String questionnaireId,
       String accountServiceUrl,
       String accountServiceLogoutUrl);
 }
