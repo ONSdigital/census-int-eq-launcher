@@ -3,6 +3,7 @@ package uk.gov.ons.ctp.integration.eqlaunch.service.impl;
 import uk.gov.ons.ctp.common.model.Channel;
 import uk.gov.ons.ctp.common.model.Language;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
+import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 public class EqLaunchServiceImpl implements EqLaunchService {
@@ -14,7 +15,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       String userId,
       String questionnaireId,
       String accountServiceUrl,
-      String accountServiceLogoutUrl) {
+      String accountServiceLogoutUrl,
+      KeyStore keyStore) {
 
     String payload =
         createPayloadString(
@@ -26,7 +28,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
             accountServiceUrl,
             accountServiceLogoutUrl);
 
-    return createPayloadJwe(payload);
+    return createPayloadJwe(payload, keyStore);
   }
 
   private String createPayloadString(
@@ -43,7 +45,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     return payloadBuilder.toString();
   }
 
-  private String createPayloadJwe(String payload) {
+  private String createPayloadJwe(String payload, KeyStore keystore) {
     return "bar";
   }
 }

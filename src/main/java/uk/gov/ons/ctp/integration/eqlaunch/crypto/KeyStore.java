@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.launcher.crypto;
+package uk.gov.ons.ctp.integration.eqlaunch.crypto;
 
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,8 +30,8 @@ public class KeyStore {
     try {
       keys = mapper.readValue(cryptoKeys, Keys.class);
     } catch (Exception e) {
-      log.error("Failed to read crptographic keys");
-      throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Failed to read crptographic keys");
+      log.error("Failed to read cryptographic keys");
+      throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Failed to read cryptographic keys");
     }
     keys.getKeys()
         .forEach(

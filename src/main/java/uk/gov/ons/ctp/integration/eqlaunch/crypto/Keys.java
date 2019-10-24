@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.launcher.crypto;
+package uk.gov.ons.ctp.integration.eqlaunch.crypto;
 
 import java.util.Map;
 import lombok.Data;
