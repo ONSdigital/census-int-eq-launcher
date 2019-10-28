@@ -37,6 +37,7 @@ public class TestEqLaunchService_payloadCreation {
     caseContainer.setAddressLine3("Segensworth's Road");
     caseContainer.setTownName("Titchfield");
     caseContainer.setPostcode("PO15 5RR");
+    caseContainer.setSurveyType("CENSUS");
 
     // Run code under to test to get a payload. Then replace elements which change on each run with
     // fixed text

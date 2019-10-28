@@ -100,7 +100,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     dictionary.put("eq_id", "census"); // hardcoded for rehearsal
     dictionary.put("period_id", "2019"); // hardcoded for rehearsal
     dictionary.put("form_type", "individual_gb_eng"); // hardcoded for rehearsal
-    dictionary.put("survey", "CENSUS"); // hardcoded for rehearsal
+    dictionary.put("survey", caseContainer.getSurveyType());
 
     return dictionary.toPythonSerialisedString();
   }
@@ -115,6 +115,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     verifyNotNull(questionnaireId, "questionnaireId", caseId);
     verifyNotNull(caseContainer.getUprn(), "address uprn", caseId);
     verifyNotNull(caseContainer.getRegion(), "region", caseId);
+    verifyNotNull(caseContainer.getSurveyType(), "survey type", caseId);
   }
 
   private void verifyNotNull(Object fieldValue, String fieldName, UUID caseId) throws CTPException {
