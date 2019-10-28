@@ -1,5 +1,6 @@
 package uk.gov.ons.ctp.integration.eqlaunch.service;
 
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.model.Channel;
 import uk.gov.ons.ctp.common.model.Language;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
@@ -15,5 +16,6 @@ public interface EqLaunchService {
       String questionnaireId,
       String accountServiceUrl,
       String accountServiceLogoutUrl,
-      KeyStore keyStore);
+      KeyStore keyStore)
+      throws CTPException;
 }
