@@ -21,7 +21,7 @@ public class KeyStore {
    * Creates a store of cryptographic keys.
    *
    * @param cryptoKeys JSON String of cryptographic keys.
-   * @throws CTPException If failure to read keys.
+   * @throws CTPException if failure to read keys.
    */
   public KeyStore(String cryptoKeys) throws CTPException {
 
@@ -38,7 +38,6 @@ public class KeyStore {
             (key, value) -> {
               value.setKid(key);
             });
-    ;
   }
 
   /**
@@ -46,7 +45,7 @@ public class KeyStore {
    *
    * @param purpose Purpose of key e.g. authentication
    * @param type e.g. private or public
-   * @return
+   * @return Optional containing Key if match found
    */
   public Optional<Key> getKeyForPurposeAndType(String purpose, String type) {
 
@@ -59,6 +58,20 @@ public class KeyStore {
 
     if (!matching.isEmpty()) {
       return Optional.of(matching.get(0));
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Get key by Id
+   *
+   * @param kid key Id
+   * @return
+   */
+  public Optional<Key> getKeyById(String kid) {
+    if (keys.getKeys().containsKey(kid)) {
+      return Optional.of(keys.getKeys().get(kid));
     } else {
       return Optional.empty();
     }
