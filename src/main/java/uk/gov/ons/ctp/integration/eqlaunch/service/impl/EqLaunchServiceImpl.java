@@ -10,11 +10,14 @@ import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.model.Channel;
 import uk.gov.ons.ctp.common.model.Language;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
+import uk.gov.ons.ctp.integration.eqlaunch.crypto.Codec;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 public class EqLaunchServiceImpl implements EqLaunchService {
 
+  private Codec codec = new Codec();
+  
   public String getEqLaunchJwe(
       Language language,
       Channel channel,
@@ -36,7 +39,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
             accountServiceUrl,
             accountServiceLogoutUrl);
 
-    return createPayloadJwe(payload, keyStore);
+    return codec.encrypt(payload, "authenticate", keyStore);
   }
 
   /**
@@ -154,9 +157,5 @@ public class EqLaunchServiceImpl implements EqLaunchService {
             .collect(Collectors.joining(", "));
 
     return displayAddress;
-  }
-
-  private String createPayloadJwe(Map<String, String> payload, KeyStore keystore) {
-    return "bar";
   }
 }
