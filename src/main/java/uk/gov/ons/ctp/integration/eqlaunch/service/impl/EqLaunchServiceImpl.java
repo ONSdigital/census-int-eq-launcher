@@ -17,7 +17,7 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 public class EqLaunchServiceImpl implements EqLaunchService {
 
   private Codec codec = new Codec();
-  
+
   public String getEqLaunchJwe(
       Language language,
       Channel channel,
