@@ -17,7 +17,7 @@ import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.ons.ctp.common.error.CTPException;
 
-/** Helper class for encrypting a JWS as the payload of a JWE. */
+/** Helper class for encrypting, decrypting a JWS as the payload of a JWE. */
 public class JWEHelper {
 
   private static final Logger log = LoggerFactory.getLogger(JWEHelper.class);
