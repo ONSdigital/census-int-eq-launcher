@@ -39,7 +39,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
             accountServiceUrl,
             accountServiceLogoutUrl);
 
-    return codec.encrypt(payload, "authenticate", keyStore);
+    return codec.encrypt(payload, "authentication", keyStore);
   }
 
   /**
