@@ -105,7 +105,10 @@ public class JWSHelper {
           log.error("Extracted JWS Payload null");
           throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Extracted JWS Payload null");
         }
-        return payload.toString();
+        // JSON specification allows you to escape forward slash. Payload object String returned
+        // seems
+        // to have this optional escaping. Simply remove so forward slashes aren't escaped.
+        return payload.toString().replace("\\/", "/");
       } else {
         log.with("kid", key.getKid()).error("Failed to verify JWS signature");
         throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Failed to verify JWS signature");

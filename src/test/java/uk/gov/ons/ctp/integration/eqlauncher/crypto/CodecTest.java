@@ -1,5 +1,9 @@
 package uk.gov.ons.ctp.integration.eqlauncher.crypto;
 
+import static org.junit.Assert.assertTrue;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.Codec;
@@ -190,20 +194,35 @@ public class CodecTest {
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
     KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION);
     EQJOSEProvider codec = new Codec();
-    Map<String, String> test =
-        Map.of(
-            "survey",
-            "CENSUS",
-            "form_type",
-            "individual_gb_eng",
-            "period_id",
-            "2019",
-            "eq_id",
-            "census",
-            "questionnaire_id",
-            "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4");
+
+    Map<String, String> test = new HashMap<String, String>();
+    test.put("jti", "88888888-8888-8888-8888-888888888888");
+    test.put("tx_id", "88888888-8888-8888-8888-888888888888");
+    test.put("iat", "12345");
+    test.put("exp", "12345");
+    test.put("case_type", "H");
+    test.put("collection_exercise_sid", "c0a6fc14-cba9-4600-8321-6d738c69333a");
+    test.put("region_code", "GB-ENG");
+    test.put("ru_ref", "10023122451");
+    test.put("case_id", "5d385037-dd4c-4a32-b716-e4e63cbb8411");
+    test.put("language_code", "en");
+    test.put("display_address", "ONS, Segensworth's Road");
+    test.put("response_id", "11100000009");
+    test.put("account_service_url", "http://localhost:9092/start");
+    test.put("account_service_log_out_url", "http://localhost:9092/start/save-and-exit");
+    test.put("channel", "field");
+    test.put("user_id", "1234567890");
+    test.put("questionnaire_id", "11100000009");
+    test.put("eq_id", "census");
+    test.put("period_id", "2019");
+    test.put("form_type", "individual_gb_eng");
+    test.put("survey", "CENSUS");
+
     String jwe = codec.encrypt(test, "encryption", keyStoreEncryption);
     String decrypt = codec.decrypt(jwe, keyStoreDecryption);
-    System.out.println(decrypt);
+
+    @SuppressWarnings("unchecked")
+    HashMap<String, String> result = new ObjectMapper().readValue(decrypt, HashMap.class);
+    assertTrue(test.equals(result));
   }
 }
