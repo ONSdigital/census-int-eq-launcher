@@ -1,6 +1,8 @@
 package uk.gov.ons.ctp.integration.eqlaunch.service.impl;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -24,7 +26,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       KeyStore keyStore)
       throws CTPException {
 
-    String payload =
+    Map<String, String> payload =
         createPayloadString(
             language,
             channel,
@@ -57,7 +59,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
    * @return
    * @throws CTPException
    */
-  String createPayloadString(
+  Map<String, String> createPayloadString(
       Language language,
       Channel channel,
       CaseContainerDTO caseContainer,
@@ -71,19 +73,19 @@ public class EqLaunchServiceImpl implements EqLaunchService {
 
     long currentTimeInSeconds = System.currentTimeMillis() / 1000;
 
-    PythonDictionary dictionary = new PythonDictionary();
+    LinkedHashMap<String, String> payload = new LinkedHashMap<>();
 
-    dictionary.put("jti", UUID.randomUUID().toString());
-    dictionary.put("tx_id", UUID.randomUUID().toString());
-    dictionary.put("iat", currentTimeInSeconds);
-    dictionary.put("exp", currentTimeInSeconds + (5 * 60));
-    dictionary.put("case_type", caseContainer.getCaseType());
-    dictionary.put("collection_exercise_sid", caseContainer.getCollectionExerciseId());
-    dictionary.put("region_code", convertRegionCode(caseContainer.getRegion().charAt(0)));
-    dictionary.put("ru_ref", caseContainer.getUprn());
-    dictionary.put("case_id", caseContainer.getId());
-    dictionary.put("language_code", language.getIsoLikeCode());
-    dictionary.put(
+    payload.put("jti", UUID.randomUUID().toString());
+    payload.put("tx_id", UUID.randomUUID().toString());
+    payload.put("iat", Long.toString(currentTimeInSeconds));
+    payload.put("exp", Long.toString(currentTimeInSeconds + (5 * 60)));
+    payload.put("case_type", caseContainer.getCaseType());
+    payload.put("collection_exercise_sid", caseContainer.getCollectionExerciseId().toString());
+    payload.put("region_code", convertRegionCode(caseContainer.getRegion().charAt(0)));
+    payload.put("ru_ref", caseContainer.getUprn());
+    payload.put("case_id", caseContainer.getId().toString());
+    payload.put("language_code", language.getIsoLikeCode());
+    payload.put(
         "display_address",
         buildDisplayAddress(
             caseContainer.getAddressLine1(),
@@ -91,18 +93,18 @@ public class EqLaunchServiceImpl implements EqLaunchService {
             caseContainer.getAddressLine3(),
             caseContainer.getTownName(),
             caseContainer.getPostcode()));
-    dictionary.put("response_id", questionnaireId);
-    dictionary.put("account_service_url", accountServiceUrl);
-    dictionary.put("account_service_log_out_url", accountServiceLogoutUrl);
-    dictionary.put("channel", channel.name().toLowerCase());
-    dictionary.put("user_id", userId);
-    dictionary.put("questionnaire_id", questionnaireId);
-    dictionary.put("eq_id", "census"); // hardcoded for rehearsal
-    dictionary.put("period_id", "2019"); // hardcoded for rehearsal
-    dictionary.put("form_type", "individual_gb_eng"); // hardcoded for rehearsal
-    dictionary.put("survey", caseContainer.getSurveyType());
+    payload.put("response_id", questionnaireId);
+    payload.put("account_service_url", accountServiceUrl);
+    payload.put("account_service_log_out_url", accountServiceLogoutUrl);
+    payload.put("channel", channel.name().toLowerCase());
+    payload.put("user_id", userId);
+    payload.put("questionnaire_id", questionnaireId);
+    payload.put("eq_id", "census"); // hardcoded for rehearsal
+    payload.put("period_id", "2019"); // hardcoded for rehearsal
+    payload.put("form_type", "individual_gb_eng"); // hardcoded for rehearsal
+    payload.put("survey", caseContainer.getSurveyType());
 
-    return dictionary.toPythonSerialisedString();
+    return payload;
   }
 
   private void validateCase(CaseContainerDTO caseContainer, String questionnaireId)
@@ -154,7 +156,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     return displayAddress;
   }
 
-  private String createPayloadJwe(String payload, KeyStore keystore) {
+  private String createPayloadJwe(Map<String, String> payload, KeyStore keystore) {
     return "bar";
   }
 }
