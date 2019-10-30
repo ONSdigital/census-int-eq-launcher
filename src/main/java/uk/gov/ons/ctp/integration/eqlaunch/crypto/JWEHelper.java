@@ -68,10 +68,10 @@ public class JWEHelper {
   }
 
   /**
-   * Get key hint (Id) which references the public key with which the JWE was encrypted.
+   * Return key hint (Id) from JWE header
    *
    * @param jwe JWE encrypted String
-   * @return Key Id, hint indicating public key used to encrypt JWE
+   * @return String representing Key hint from header
    * @throws CTPException when fails to retrieve key Id from header.
    */
   public String getKid(String jwe) throws CTPException {
