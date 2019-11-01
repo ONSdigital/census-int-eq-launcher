@@ -18,26 +18,12 @@ public class EqLaunchServiceImpl implements EqLaunchService {
 
   private Codec codec = new Codec();
 
-  public String getEqLaunchJwe(
-      Language language,
-      Channel channel,
-      CaseContainerDTO caseContainer,
-      String userId,
-      String questionnaireId,
-      String accountServiceUrl,
-      String accountServiceLogoutUrl,
-      KeyStore keyStore)
-      throws CTPException {
+  public String getEqLaunchJwe(Language language, Channel channel, CaseContainerDTO caseContainer,
+      String userId, String questionnaireId, String accountServiceUrl,
+      String accountServiceLogoutUrl, KeyStore keyStore) throws CTPException {
 
-    Map<String, String> payload =
-        createPayloadString(
-            language,
-            channel,
-            caseContainer,
-            userId,
-            questionnaireId,
-            accountServiceUrl,
-            accountServiceLogoutUrl);
+    Map<String, String> payload = createPayloadString(language, channel, caseContainer, userId,
+        questionnaireId, accountServiceUrl, accountServiceLogoutUrl);
 
     return codec.encrypt(payload, "authentication", keyStore);
   }
@@ -46,10 +32,12 @@ public class EqLaunchServiceImpl implements EqLaunchService {
    * This method builds the payload of a URL that will be used to launch EQ. This code replicates
    * the payload building done by the Python code in the census-rh-ui project for class /app/eq.py.
    *
-   * <p>EQ requires a payload string formatted as a Python serialised dictionary, so this code has
-   * to replicate all Python formatting quirks.
+   * <p>
+   * EQ requires a payload string formatted as a Python serialised dictionary, so this code has to
+   * replicate all Python formatting quirks.
    *
-   * <p>This code assumes that the channel is CC or field, and will need the user_id field to be
+   * <p>
+   * This code assumes that the channel is CC or field, and will need the user_id field to be
    * cleared if it is ever used from RH.
    *
    * @param language
@@ -62,15 +50,9 @@ public class EqLaunchServiceImpl implements EqLaunchService {
    * @return
    * @throws CTPException
    */
-  Map<String, String> createPayloadString(
-      Language language,
-      Channel channel,
-      CaseContainerDTO caseContainer,
-      String userId,
-      String questionnaireId,
-      String accountServiceUrl,
-      String accountServiceLogoutUrl)
-      throws CTPException {
+  Map<String, String> createPayloadString(Language language, Channel channel,
+      CaseContainerDTO caseContainer, String userId, String questionnaireId,
+      String accountServiceUrl, String accountServiceLogoutUrl) throws CTPException {
 
     validateCase(caseContainer, questionnaireId);
 
@@ -84,17 +66,13 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     payload.put("exp", Long.toString(currentTimeInSeconds + (5 * 60)));
     payload.put("case_type", caseContainer.getCaseType());
     payload.put("collection_exercise_sid", caseContainer.getCollectionExerciseId().toString());
-    payload.put("region_code", convertRegionCode(caseContainer.getRegion().charAt(0)));
+    payload.put("region_code", convertRegionCode(caseContainer.getRegion()));
     payload.put("ru_ref", caseContainer.getUprn());
     payload.put("case_id", caseContainer.getId().toString());
     payload.put("language_code", language.getIsoLikeCode());
-    payload.put(
-        "display_address",
-        buildDisplayAddress(
-            caseContainer.getAddressLine1(),
-            caseContainer.getAddressLine2(),
-            caseContainer.getAddressLine3(),
-            caseContainer.getTownName(),
+    payload.put("display_address",
+        buildDisplayAddress(caseContainer.getAddressLine1(), caseContainer.getAddressLine2(),
+            caseContainer.getAddressLine3(), caseContainer.getTownName(),
             caseContainer.getPostcode()));
     payload.put("response_id", questionnaireId);
     payload.put("account_service_url", accountServiceUrl);
@@ -125,23 +103,23 @@ public class EqLaunchServiceImpl implements EqLaunchService {
 
   private void verifyNotNull(Object fieldValue, String fieldName, UUID caseId) throws CTPException {
     if (fieldValue == null) {
-      throw new CTPException(
-          Fault.VALIDATION_FAILED,
+      throw new CTPException(Fault.VALIDATION_FAILED,
           "No value supplied for " + fieldName + " field of case " + caseId);
     }
   }
 
-  private String convertRegionCode(char caseRegion) throws CTPException {
-    String regionValue;
+  private String convertRegionCode(String caseRegionStr) throws CTPException {
+    String regionValue = "GB-ENG";
 
-    if (caseRegion == 'N') {
-      regionValue = "GB-NIR";
-    } else if (caseRegion == 'W') {
-      regionValue = "GB-WLS";
-    } else if (caseRegion == 'E') {
-      regionValue = "GB-ENG";
-    } else {
-      throw new CTPException(Fault.VALIDATION_FAILED, "Unknown region code: " + caseRegion);
+    if (caseRegionStr != null) {
+      char caseRegion = caseRegionStr.charAt(0);
+      if (caseRegion == 'N') {
+        regionValue = "GB-NIR";
+      } else if (caseRegion == 'W') {
+        regionValue = "GB-WLS";
+      } else if (caseRegion == 'E') {
+        regionValue = "GB-ENG";
+      }
     }
 
     return regionValue;
@@ -150,11 +128,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
   // Create an address from the first 2 non-null parts of the address.
   // This replicates RHUI's creation of the display address.
   private String buildDisplayAddress(String... addressElements) {
-    String displayAddress =
-        Arrays.stream(addressElements)
-            .filter(a -> a != null)
-            .limit(2)
-            .collect(Collectors.joining(", "));
+    String displayAddress = Arrays.stream(addressElements).filter(a -> a != null).limit(2)
+        .collect(Collectors.joining(", "));
 
     return displayAddress;
   }
