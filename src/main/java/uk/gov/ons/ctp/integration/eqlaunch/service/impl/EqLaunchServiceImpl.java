@@ -1,5 +1,7 @@
 package uk.gov.ons.ctp.integration.eqlaunch.service.impl;
 
+import static uk.gov.ons.ctp.common.model.Source.FIELD_SERVICE;
+
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,6 +11,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.model.Channel;
 import uk.gov.ons.ctp.common.model.Language;
+import uk.gov.ons.ctp.common.model.Source;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.Codec;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
@@ -20,6 +23,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
 
   public String getEqLaunchJwe(
       Language language,
+      Source source,
       Channel channel,
       CaseContainerDTO caseContainer,
       String userId,
@@ -32,6 +36,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     Map<String, String> payload =
         createPayloadString(
             language,
+            source,
             channel,
             caseContainer,
             userId,
@@ -64,6 +69,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
    */
   Map<String, String> createPayloadString(
       Language language,
+      Source source,
       Channel channel,
       CaseContainerDTO caseContainer,
       String userId,
@@ -72,8 +78,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       String accountServiceLogoutUrl)
       throws CTPException {
 
-    validateCase(caseContainer, questionnaireId);
-
+    validateCase(source, caseContainer, questionnaireId);
+    String caseIdStr = caseContainer.getId().toString();
     long currentTimeInSeconds = System.currentTimeMillis() / 1000;
 
     LinkedHashMap<String, String> payload = new LinkedHashMap<>();
@@ -85,8 +91,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     payload.put("case_type", caseContainer.getCaseType());
     payload.put("collection_exercise_sid", caseContainer.getCollectionExerciseId().toString());
     payload.put("region_code", convertRegionCode(caseContainer.getRegion()));
-    payload.put("ru_ref", caseContainer.getUprn());
-    payload.put("case_id", caseContainer.getId().toString());
+    payload.put("ru_ref", source == FIELD_SERVICE ? caseIdStr : caseContainer.getUprn());
+    payload.put("case_id", caseIdStr);
     payload.put("language_code", language.getIsoLikeCode());
     payload.put(
         "display_address",
@@ -110,7 +116,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     return payload;
   }
 
-  private void validateCase(CaseContainerDTO caseContainer, String questionnaireId)
+  private void validateCase(Source source, CaseContainerDTO caseContainer, String questionnaireId)
       throws CTPException {
     UUID caseId = caseContainer.getId();
 
@@ -118,7 +124,9 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     verifyNotNull(caseContainer.getCaseType(), "case type", caseId);
     verifyNotNull(caseContainer.getCollectionExerciseId(), "collection id", caseId);
     verifyNotNull(questionnaireId, "questionnaireId", caseId);
-    verifyNotNull(caseContainer.getUprn(), "address uprn", caseId);
+    if (source != FIELD_SERVICE) {
+      verifyNotNull(caseContainer.getUprn(), "address uprn", caseId);
+    }
     verifyNotNull(caseContainer.getSurveyType(), "survey type", caseId);
   }
 

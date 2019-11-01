@@ -8,6 +8,7 @@ import org.junit.Test;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.model.Channel;
 import uk.gov.ons.ctp.common.model.Language;
+import uk.gov.ons.ctp.common.model.Source;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 
 public class TestEqLaunchService_payloadCreation {
@@ -17,6 +18,7 @@ public class TestEqLaunchService_payloadCreation {
     EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl();
 
     Language language = Language.ENGLISH;
+    Source source = Source.FIELD_SERVICE;
     Channel channel = Channel.FIELD;
     CaseContainerDTO caseContainer = new CaseContainerDTO();
     String userId = "1234567890";
@@ -45,6 +47,7 @@ public class TestEqLaunchService_payloadCreation {
     Map<String, String> payloadMap =
         eqLaunchService.createPayloadString(
             language,
+            source,
             channel,
             caseContainer,
             userId,
@@ -67,7 +70,7 @@ public class TestEqLaunchService_payloadCreation {
     expectedPayload.append("case_type=H, ");
     expectedPayload.append("collection_exercise_sid=" + collectionExerciseId.toString() + ", ");
     expectedPayload.append("region_code=GB-ENG, ");
-    expectedPayload.append("ru_ref=" + uprn + ", ");
+    expectedPayload.append("ru_ref=" + caseId + ", ");
     expectedPayload.append("case_id=" + caseId + ", ");
     expectedPayload.append("language_code=en, ");
     expectedPayload.append("display_address=ONS, Segensworth\'s Road, ");
