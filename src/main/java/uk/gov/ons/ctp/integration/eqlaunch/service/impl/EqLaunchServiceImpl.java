@@ -119,7 +119,6 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     verifyNotNull(caseContainer.getCollectionExerciseId(), "collection id", caseId);
     verifyNotNull(questionnaireId, "questionnaireId", caseId);
     verifyNotNull(caseContainer.getUprn(), "address uprn", caseId);
-    verifyNotNull(caseContainer.getRegion(), "region", caseId);
     verifyNotNull(caseContainer.getSurveyType(), "survey type", caseId);
   }
 
