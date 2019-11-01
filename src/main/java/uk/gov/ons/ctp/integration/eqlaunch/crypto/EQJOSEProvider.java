@@ -19,7 +19,7 @@ public interface EQJOSEProvider {
    * @return String representing encrypted JWE token
    * @throws CTPException
    */
-  String encrypt(Map<String, String> claims, String keyPurpose, KeyStore keyStore)
+  String encrypt(Map<String, Object> claims, String keyPurpose, KeyStore keyStore)
       throws CTPException;
 
   /**

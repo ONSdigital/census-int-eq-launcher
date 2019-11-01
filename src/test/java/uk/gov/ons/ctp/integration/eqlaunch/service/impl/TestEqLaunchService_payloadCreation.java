@@ -44,7 +44,7 @@ public class TestEqLaunchService_payloadCreation {
 
     // Run code under to test to get a payload. Then replace elements which change on each run with
     // fixed text
-    Map<String, String> payloadMap =
+    Map<String, Object> payloadMap =
         eqLaunchService.createPayloadString(
             language,
             source,

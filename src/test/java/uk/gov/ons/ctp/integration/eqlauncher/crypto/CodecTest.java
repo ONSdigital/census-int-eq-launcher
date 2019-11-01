@@ -190,7 +190,7 @@ public class CodecTest {
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
     KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION);
     EQJOSEProvider codec = new Codec();
-    Map<String, String> test =
+    Map<String, Object> test =
         Map.of(
             "survey",
             "CENSUS",

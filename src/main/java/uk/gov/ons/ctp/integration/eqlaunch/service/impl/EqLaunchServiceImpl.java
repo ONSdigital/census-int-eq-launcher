@@ -33,7 +33,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       KeyStore keyStore)
       throws CTPException {
 
-    Map<String, String> payload =
+    Map<String, Object> payload =
         createPayloadString(
             language,
             source,
@@ -67,7 +67,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
    * @return
    * @throws CTPException
    */
-  Map<String, String> createPayloadString(
+  Map<String, Object> createPayloadString(
       Language language,
       Source source,
       Channel channel,
@@ -82,12 +82,12 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     String caseIdStr = caseContainer.getId().toString();
     long currentTimeInSeconds = System.currentTimeMillis() / 1000;
 
-    LinkedHashMap<String, String> payload = new LinkedHashMap<>();
+    LinkedHashMap<String, Object> payload = new LinkedHashMap<>();
 
     payload.put("jti", UUID.randomUUID().toString());
     payload.put("tx_id", UUID.randomUUID().toString());
-    payload.put("iat", Long.toString(currentTimeInSeconds));
-    payload.put("exp", Long.toString(currentTimeInSeconds + (5 * 60)));
+    payload.put("iat", currentTimeInSeconds);
+    payload.put("exp", currentTimeInSeconds + (5 * 60));
     payload.put("case_type", caseContainer.getCaseType());
     payload.put("collection_exercise_sid", caseContainer.getCollectionExerciseId().toString());
     payload.put("region_code", convertRegionCode(caseContainer.getRegion()));

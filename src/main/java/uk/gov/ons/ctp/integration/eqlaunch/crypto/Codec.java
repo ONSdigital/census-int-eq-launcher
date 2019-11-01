@@ -24,7 +24,7 @@ public class Codec implements EQJOSEProvider {
   /**
    * Implementation to produce signed JWS for a set of claims and encrypt as the payload of a JWE.
    */
-  public String encrypt(Map<String, String> claims, String keyPurpose, KeyStore keyStore)
+  public String encrypt(Map<String, Object> claims, String keyPurpose, KeyStore keyStore)
       throws CTPException {
 
     Optional<Key> privateKey = keyStore.getKeyForPurposeAndType(keyPurpose, KEYTYPE_PRIVATE);

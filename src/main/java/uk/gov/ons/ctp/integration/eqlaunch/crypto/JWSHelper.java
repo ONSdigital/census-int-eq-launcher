@@ -35,7 +35,7 @@ public class JWSHelper {
    * @return JWSObject representing JWS token
    * @throws CTPException
    */
-  public JWSObject encode(Map<String, String> claims, Key key) throws CTPException {
+  public JWSObject encode(Map<String, Object> claims, Key key) throws CTPException {
 
     JWSHeader jwsHeader = buildHeader(key);
     Payload jwsClaims = buildClaims(claims);
@@ -67,7 +67,7 @@ public class JWSHelper {
     }
   }
 
-  private Payload buildClaims(Map<String, String> claims) {
+  private Payload buildClaims(Map<String, Object> claims) {
     JSONObject jsonObject = new JSONObject(claims);
     Payload jwsClaims = new Payload(jsonObject);
     return jwsClaims;
