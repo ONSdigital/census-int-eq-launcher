@@ -1,11 +1,16 @@
 package uk.gov.ons.ctp.integration.eqlauncher.crypto;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.Codec;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.EQJOSEProvider;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
@@ -189,55 +194,130 @@ public class CodecTest {
           + ENCRYPTION_PRIVATE_VALUE
           + "\"}}}";
 
+  private static final String JWTKEYS_ENCRYPTION_NO_PRIVATE =
+      "{\"keys\": {\""
+          + ENCRYPTION_PRIVATE_SHA1
+          + "\": "
+          + "{\"purpose\": \"encryption\", "
+          + "\"type\": \"public\""
+          + ", \"value\": \""
+          + ENCRYPTION_PUBLIC_VALUE
+          + "\"}}}";
+
+  private static final String JWTKEYS_ENCRYPTION_NO_PUBLIC =
+      "{\"keys\": {\""
+          + SIGNING_PUBLIC_SHA1
+          + "\": "
+          + "{\"purpose\": \"encryption\", "
+          + "\"type\": \"private\""
+          + ", \"value\": \""
+          + SIGNING_PRIVATE_VALUE
+          + "\"}}}";
+
+  private static final String JWTKEYS_DECRYPTION_NO_PRIVATE =
+      "{\"keys\": {\""
+          + SIGNING_PUBLIC_SHA1
+          + "\": "
+          + "{\"purpose\": \"decryption\", "
+          + "\"type\": \"public\""
+          + ", \"value\": \""
+          + SIGNING_PUBLIC_VALUE
+          + "\"}}}";
+
+  private static final String JWTKEYS_DECRYPTION_NO_PUBLIC =
+      "{\"keys\": {\""
+          + ENCRYPTION_PRIVATE_SHA1
+          + "\": "
+          + "{\"purpose\": \"decryption\", "
+          + "\"type\": \"private\""
+          + ", \"value\": \""
+          + ENCRYPTION_PRIVATE_VALUE
+          + "\"}}}";
+
+  @Rule public ExpectedException thrown = ExpectedException.none();
+
   @Test
   public void testEncryptDecrypt() throws Exception {
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
     KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION);
     EQJOSEProvider codec = new Codec();
-<<<<<<< HEAD
-    Map<String, Object> test =
-        Map.of(
-            "survey",
-            "CENSUS",
-            "form_type",
-            "individual_gb_eng",
-            "period_id",
-            "2019",
-            "eq_id",
-            "census",
-            "questionnaire_id",
-            "dc4477d1-dd3f-4c69-b181-7ff725dc9fa4");
-=======
 
-    Map<String, String> test = new HashMap<String, String>();
-    test.put("jti", "88888888-8888-8888-8888-888888888888");
-    test.put("tx_id", "88888888-8888-8888-8888-888888888888");
-    test.put("iat", "12345");
-    test.put("exp", "12345");
-    test.put("case_type", "H");
+    Map<String, Object> test = new HashMap<String, Object>();
+    test.put("jti", "de7af250-7390-4f8c-877f-8b71e1a1d983");
+    test.put("tx_id", "816cfe15-83f9-4ccb-a689-7469a415ce91");
+    test.put("iat", 1572946565);
+    test.put("exp", 1572946865);
+    test.put("case_type", "HH");
     test.put("collection_exercise_sid", "c0a6fc14-cba9-4600-8321-6d738c69333a");
     test.put("region_code", "GB-ENG");
     test.put("ru_ref", "10023122451");
     test.put("case_id", "5d385037-dd4c-4a32-b716-e4e63cbb8411");
     test.put("language_code", "en");
-    test.put("display_address", "ONS, Segensworth's Road");
+    test.put("display_address", "ONS, Segensworth's Road, $&%<");
     test.put("response_id", "11100000009");
     test.put("account_service_url", "http://localhost:9092/start");
     test.put("account_service_log_out_url", "http://localhost:9092/start/save-and-exit");
     test.put("channel", "field");
-    test.put("user_id", "1234567890");
+    test.put("user_id", "");
     test.put("questionnaire_id", "11100000009");
     test.put("eq_id", "census");
     test.put("period_id", "2019");
     test.put("form_type", "individual_gb_eng");
     test.put("survey", "CENSUS");
 
->>>>>>> CR-560 Remove optional forward slash escaping. Tidy Codec unit test
     String jwe = codec.encrypt(test, "encryption", keyStoreEncryption);
     String decrypt = codec.decrypt(jwe, keyStoreDecryption);
 
     @SuppressWarnings("unchecked")
     HashMap<String, String> result = new ObjectMapper().readValue(decrypt, HashMap.class);
     assertTrue(test.equals(result));
+  }
+
+  @Test
+  public void testEncryptNoPrivateKey() throws Exception {
+    KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION_NO_PRIVATE);
+    EQJOSEProvider codec = new Codec();
+
+    thrown.expect(CTPException.class);
+    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
+    codec.encrypt(new HashMap<String, Object>(), "encryption", keyStoreEncryption);
+  }
+
+  @Test
+  public void testEncryptNoPublicKey() throws Exception {
+    KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION_NO_PUBLIC);
+    EQJOSEProvider codec = new Codec();
+
+    thrown.expect(CTPException.class);
+    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
+    codec.encrypt(new HashMap<String, Object>(), "encryption", keyStoreEncryption);
+  }
+
+  @Test
+  public void testDecryptNoPrivateKey() throws Exception {
+    KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
+    KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION_NO_PRIVATE);
+    EQJOSEProvider codec = new Codec();
+
+    String jwe = codec.encrypt(new HashMap<String, Object>(), "encryption", keyStoreEncryption);
+
+    thrown.expect(CTPException.class);
+    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
+
+    codec.decrypt(jwe, keyStoreDecryption);
+  }
+
+  @Test
+  public void testDecryptNoPublicKey() throws Exception {
+    KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
+    KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION_NO_PUBLIC);
+    EQJOSEProvider codec = new Codec();
+
+    String jwe = codec.encrypt(new HashMap<String, Object>(), "encryption", keyStoreEncryption);
+
+    thrown.expect(CTPException.class);
+    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
+
+    codec.decrypt(jwe, keyStoreDecryption);
   }
 }

@@ -2,7 +2,9 @@ package uk.gov.ons.ctp.integration.eqlaunch.crypto;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWEAlgorithm;
 import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.JWSObject;
@@ -11,9 +13,6 @@ import com.nimbusds.jose.crypto.RSADecrypter;
 import com.nimbusds.jose.crypto.RSAEncrypter;
 import com.nimbusds.jose.jwk.RSAKey;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
-import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import uk.gov.ons.ctp.common.error.CTPException;
 
@@ -21,9 +20,6 @@ import uk.gov.ons.ctp.common.error.CTPException;
 public class JWEHelper {
 
   private static final Logger log = LoggerFactory.getLogger(JWEHelper.class);
-
-  private static final String HEADER_ALG = "RSA-OAEP";
-  private static final String HEADER_ENC = "A256GCM";
 
   /**
    * Encrypt JWS as payload of JWE
@@ -42,7 +38,6 @@ public class JWEHelper {
     RSAKey jwk = (RSAKey) key.getJWK();
 
     try {
-      jwk.toRSAPublicKey();
       jweObject.encrypt(new RSAEncrypter(jwk));
       return jweObject.serialize();
     } catch (JOSEException e) {
@@ -51,20 +46,13 @@ public class JWEHelper {
     }
   }
 
-  private JWEHeader buildHeader(Key key) throws CTPException {
-    Map<String, Object> header = new HashMap<>();
-    header.put("alg", HEADER_ALG);
-    header.put("enc", HEADER_ENC);
-    header.put("kid", key.getKid());
+  private JWEHeader buildHeader(Key key) {
 
-    JSONObject jsonObject = new JSONObject(header);
-    try {
-      JWEHeader jweHeader = JWEHeader.parse(jsonObject);
-      return jweHeader;
-    } catch (ParseException e) {
-      log.with("kid", key.getKid()).error("Failed to create JWE header");
-      throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Failed to create JWE header");
-    }
+    JWEHeader jweHeader =
+        new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP, EncryptionMethod.A256GCM)
+            .keyID(key.getKid())
+            .build();
+    return jweHeader;
   }
 
   /**
