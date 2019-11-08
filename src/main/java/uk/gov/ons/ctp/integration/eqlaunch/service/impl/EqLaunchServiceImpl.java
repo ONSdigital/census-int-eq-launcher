@@ -103,8 +103,14 @@ public class EqLaunchServiceImpl implements EqLaunchService {
             caseContainer.getTownName(),
             caseContainer.getPostcode()));
     payload.put("response_id", questionnaireId);
-    payload.put("account_service_url", accountServiceUrl);
-    payload.put("account_service_log_out_url", accountServiceLogoutUrl);
+
+    if (accountServiceUrl != null) {
+      payload.put("account_service_url", accountServiceUrl);
+    }
+    if (accountServiceLogoutUrl != null) {
+      payload.put("account_service_log_out_url", accountServiceLogoutUrl);
+    }
+
     payload.put("channel", channel.name().toLowerCase());
     payload.put("user_id", userId);
     payload.put("questionnaire_id", questionnaireId);
