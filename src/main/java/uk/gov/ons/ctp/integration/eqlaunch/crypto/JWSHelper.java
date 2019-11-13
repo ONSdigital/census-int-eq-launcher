@@ -3,14 +3,14 @@ package uk.gov.ons.ctp.integration.eqlaunch.crypto;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.RSAKey;
-import java.text.ParseException;
-import java.util.HashMap;
 import java.util.Map;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -23,9 +23,6 @@ import uk.gov.ons.ctp.common.error.CTPException;
 public class JWSHelper {
 
   private static final Logger log = LoggerFactory.getLogger(JWSHelper.class);
-
-  private static final String HEADER_ALG = "RS256";
-  private static final String HEADER_TYP = "jwt";
 
   /**
    * Return JWSObject with provided claims using key provided
@@ -52,19 +49,14 @@ public class JWSHelper {
     }
   }
 
-  private JWSHeader buildHeader(Key key) throws CTPException {
-    Map<String, Object> header = new HashMap<>();
-    header.put("kid", key.getKid());
-    header.put("typ", HEADER_TYP);
-    header.put("alg", HEADER_ALG);
-    JSONObject jsonObject = new JSONObject(header);
-    try {
-      JWSHeader jwsHeader = JWSHeader.parse(jsonObject);
-      return jwsHeader;
-    } catch (ParseException e) {
-      log.with("kid", key.getKid()).error("Failed to create JWS header");
-      throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Failed to create JWS header");
-    }
+  private JWSHeader buildHeader(Key key) {
+
+    JWSHeader jwsHeader =
+        new JWSHeader.Builder(JWSAlgorithm.RS256)
+            .type(JOSEObjectType.JWT)
+            .keyID(key.getKid())
+            .build();
+    return jwsHeader;
   }
 
   private Payload buildClaims(Map<String, Object> claims) {
