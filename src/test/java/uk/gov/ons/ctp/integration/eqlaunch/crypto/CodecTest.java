@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.eqlauncher.crypto;
+package uk.gov.ons.ctp.integration.eqlaunch.crypto;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasProperty;
