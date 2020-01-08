@@ -22,10 +22,6 @@ public interface EqLaunchService {
       throws CTPException;
 
   String getEqFlushLaunchJwe(
-      Language language,
-      Source source,
-      Channel channel,
-      String questionnaireId,
-      KeyStore keyStore)
+      Language language, Source source, Channel channel, String questionnaireId, KeyStore keyStore)
       throws CTPException;
 }

@@ -1,12 +1,13 @@
 package uk.gov.ons.ctp.integration.eqlaunch.service.impl;
 
 import static org.junit.Assert.assertEquals;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.Test;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.gov.ons.ctp.common.model.Channel;
 import uk.gov.ons.ctp.common.model.Language;
 import uk.gov.ons.ctp.common.model.Source;
@@ -192,12 +193,14 @@ public class TestEqLaunchService_payloadCreation {
           + ", \"value\": \""
           + ENCRYPTION_PRIVATE_VALUE
           + "\"}}}";
-  
+
   /**
-   * Calls both the public and package methods in the class under test and asserts that each returns the expected map
-   * The public method returns the encrypted JWE representation of the map, the package method returns the map raw.
-   * The test decodes the encrypted form and deserialises it, as well as sanitising it of variable UUID and date time values.
-   * The test asserts both the behaviour of the public method and its use of the package method.
+   * Calls both the public and package methods in the class under test and asserts that each returns
+   * the expected map The public method returns the encrypted JWE representation of the map, the
+   * package method returns the map raw. The test decodes the encrypted form and deserialises it, as
+   * well as sanitising it of variable UUID and date time values. The test asserts both the
+   * behaviour of the public method and its use of the package method.
+   *
    * @throws Exception
    */
   @Test
@@ -211,7 +214,7 @@ public class TestEqLaunchService_payloadCreation {
     UUID collectionExerciseId = UUID.randomUUID();
     String uprn = "10023122451";
     UUID caseId = UUID.randomUUID();
-    
+
     Map<String, Object> expectedMap = new HashMap<>();
     expectedMap.put("jti", "88888888-8888-8888-8888-888888888888");
     expectedMap.put("tx_id", "88888888-8888-8888-8888-888888888888");
@@ -245,7 +248,6 @@ public class TestEqLaunchService_payloadCreation {
     String accountServiceUrl = "http://localhost:9092/start";
     String accountServiceLogoutUrl = "http://localhost:9092/start/save-and-exit";
 
-
     caseContainer.setCaseType("H");
     caseContainer.setCollectionExerciseId(collectionExerciseId);
     caseContainer.setRegion("E");
@@ -271,7 +273,10 @@ public class TestEqLaunchService_payloadCreation {
             accountServiceUrl,
             accountServiceLogoutUrl);
 
-    assertEquals("expectedMap should equal the cleaned map from the complex call", expectedMap, cleanPayloadMap(payloadMapFromComplexCall));
+    assertEquals(
+        "expectedMap should equal the cleaned map from the complex call",
+        expectedMap,
+        cleanPayloadMap(payloadMapFromComplexCall));
 
     // Run code under test to get encrypted payload string
     String payloadStringFromSimpleCall =
@@ -291,17 +296,23 @@ public class TestEqLaunchService_payloadCreation {
 
     // turn it back into a map
     ObjectMapper mapper = new ObjectMapper();
-    TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+    TypeReference<HashMap<String, Object>> typeRef =
+        new TypeReference<HashMap<String, Object>>() {};
     Map<String, Object> payloadMapFromSimpleCall = mapper.readValue(decrypted, typeRef);
-    
-    assertEquals("expectedMap should equal the cleaned map from the simple call", expectedMap, cleanPayloadMap(payloadMapFromSimpleCall));
+
+    assertEquals(
+        "expectedMap should equal the cleaned map from the simple call",
+        expectedMap,
+        cleanPayloadMap(payloadMapFromSimpleCall));
   }
 
   /**
-   * Calls both the public and package methods in the class under test and asserts that each returns the expected map
-   * The public method returns the encrypted JWE representation of the map, the package method returns the map raw.
-   * The test decodes the encrypted form and deserialises it, as well as sanitising it of variable UUID and date time values.
-   * The test asserts both the behaviour of the public method and its use of the package method.
+   * Calls both the public and package methods in the class under test and asserts that each returns
+   * the expected map The public method returns the encrypted JWE representation of the map, the
+   * package method returns the map raw. The test decodes the encrypted form and deserialises it, as
+   * well as sanitising it of variable UUID and date time values. The test asserts both the
+   * behaviour of the public method and its use of the package method.
+   *
    * @throws Exception
    */
   @Test
@@ -335,36 +346,31 @@ public class TestEqLaunchService_payloadCreation {
     // Run code under to test to get the payload map.
     Map<String, Object> payloadMapFromComplexCall =
         eqLaunchService.createPayloadMap(
-            language,
-            source,
-            channel,
-            null,
-            null,
-            "flusher",
-            questionnaireId,
-            null,
-            null);
+            language, source, channel, null, null, "flusher", questionnaireId, null, null);
 
-    assertEquals("expectedMap should equal the cleaned map from the complex call", expectedMap, cleanPayloadMap(payloadMapFromComplexCall));
+    assertEquals(
+        "expectedMap should equal the cleaned map from the complex call",
+        expectedMap,
+        cleanPayloadMap(payloadMapFromComplexCall));
 
     // Run code under test to get encrypted payload string
     String payloadStringFromSimpleCall =
         eqLaunchService.getEqFlushLaunchJwe(
-            language,
-            source,
-            channel,
-            questionnaireId,
-            keyStoreEncryption);
+            language, source, channel, questionnaireId, keyStoreEncryption);
 
     // decrypt it
     String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
 
     // turn it back into a map
     ObjectMapper mapper = new ObjectMapper();
-    TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+    TypeReference<HashMap<String, Object>> typeRef =
+        new TypeReference<HashMap<String, Object>>() {};
     Map<String, Object> payloadMapFromSimpleCall = mapper.readValue(decrypted, typeRef);
-    
-    assertEquals("expectedMap should equal the cleaned map from the simple call", expectedMap, cleanPayloadMap(payloadMapFromSimpleCall));
+
+    assertEquals(
+        "expectedMap should equal the cleaned map from the simple call",
+        expectedMap,
+        cleanPayloadMap(payloadMapFromSimpleCall));
   }
 
   private Map<String, Object> cleanPayloadMap(Map<String, Object> payloadMap) {
@@ -374,5 +380,4 @@ public class TestEqLaunchService_payloadCreation {
     payloadMap.put("exp", "12345");
     return payloadMap;
   }
-
 }
