@@ -9,7 +9,7 @@ import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
 
 public interface EqLaunchService {
 
-  String getEqLaunchJwe(
+  String getEqFieldLaunchJwe(
       Language language,
       Source source,
       Channel channel,
@@ -19,5 +19,9 @@ public interface EqLaunchService {
       String accountServiceUrl,
       String accountServiceLogoutUrl,
       KeyStore keyStore)
+      throws CTPException;
+
+  String getEqFlushLaunchJwe(
+      Language language, Source source, Channel channel, String questionnaireId, KeyStore keyStore)
       throws CTPException;
 }

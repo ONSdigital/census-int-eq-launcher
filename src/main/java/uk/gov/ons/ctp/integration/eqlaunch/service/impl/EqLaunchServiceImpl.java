@@ -5,6 +5,7 @@ import static uk.gov.ons.ctp.common.model.Source.FIELD_SERVICE;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import uk.gov.ons.ctp.common.error.CTPException;
@@ -19,9 +20,10 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 public class EqLaunchServiceImpl implements EqLaunchService {
 
+  private static final String ROLE_FLUSHER = "flusher";
   private Codec codec = new Codec();
 
-  public String getEqLaunchJwe(
+  public String getEqFieldLaunchJwe(
       Language language,
       Source source,
       Channel channel,
@@ -34,15 +36,27 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       throws CTPException {
 
     Map<String, Object> payload =
-        createPayloadString(
+        createPayloadMap(
             language,
             source,
             channel,
             caseContainer,
             userId,
+            null,
             questionnaireId,
             accountServiceUrl,
             accountServiceLogoutUrl);
+
+    return codec.encrypt(payload, "authentication", keyStore);
+  }
+
+  public String getEqFlushLaunchJwe(
+      Language language, Source source, Channel channel, String questionnaireId, KeyStore keyStore)
+      throws CTPException {
+
+    Map<String, Object> payload =
+        createPayloadMap(
+            language, source, channel, null, null, ROLE_FLUSHER, questionnaireId, null, null);
 
     return codec.encrypt(payload, "authentication", keyStore);
   }
@@ -61,64 +75,72 @@ public class EqLaunchServiceImpl implements EqLaunchService {
    * @param channel
    * @param caseContainer
    * @param userId
+   * @param role
    * @param questionnaireId
    * @param accountServiceUrl
    * @param accountServiceLogoutUrl
    * @return
    * @throws CTPException
    */
-  Map<String, Object> createPayloadString(
+  Map<String, Object> createPayloadMap(
       Language language,
       Source source,
       Channel channel,
       CaseContainerDTO caseContainer,
       String userId,
+      String role,
       String questionnaireId,
       String accountServiceUrl,
       String accountServiceLogoutUrl)
       throws CTPException {
 
-    validateCase(source, caseContainer, questionnaireId);
-    String caseIdStr = caseContainer.getId().toString();
     long currentTimeInSeconds = System.currentTimeMillis() / 1000;
 
     LinkedHashMap<String, Object> payload = new LinkedHashMap<>();
 
-    payload.put("jti", UUID.randomUUID().toString());
-    payload.put("tx_id", UUID.randomUUID().toString());
-    payload.put("iat", currentTimeInSeconds);
-    payload.put("exp", currentTimeInSeconds + (5 * 60));
-    payload.put("case_type", caseContainer.getCaseType());
-    payload.put("collection_exercise_sid", caseContainer.getCollectionExerciseId().toString());
-    payload.put("region_code", convertRegionCode(caseContainer.getRegion()));
-    payload.put("ru_ref", source == FIELD_SERVICE ? caseIdStr : caseContainer.getUprn());
-    payload.put("case_id", caseIdStr);
-    payload.put("language_code", language.getIsoLikeCode());
-    payload.put(
-        "display_address",
-        buildDisplayAddress(
-            caseContainer.getAddressLine1(),
-            caseContainer.getAddressLine2(),
-            caseContainer.getAddressLine3(),
-            caseContainer.getTownName(),
-            caseContainer.getPostcode()));
-    payload.put("response_id", questionnaireId);
+    payload.computeIfAbsent("jti", (k) -> UUID.randomUUID().toString());
+    payload.computeIfAbsent("tx_id", (k) -> UUID.randomUUID().toString());
+    payload.computeIfAbsent("iat", (k) -> currentTimeInSeconds);
+    payload.computeIfAbsent("exp", (k) -> currentTimeInSeconds + (5 * 60));
 
-    if (accountServiceUrl != null) {
-      payload.put("account_service_url", accountServiceUrl);
+    if (role == null || !role.equals(ROLE_FLUSHER)) {
+      Objects.requireNonNull(
+          caseContainer, "CaseContainer mandatory unless role is '" + ROLE_FLUSHER + "'");
+
+      payload.computeIfAbsent("case_type", (k) -> caseContainer.getCaseType());
+      validateCase(source, caseContainer, questionnaireId);
+      String caseIdStr = caseContainer.getId().toString();
+      payload.computeIfAbsent(
+          "collection_exercise_sid", (k) -> caseContainer.getCollectionExerciseId().toString());
+      String convertedRegionCode = convertRegionCode(caseContainer.getRegion());
+      payload.computeIfAbsent("region_code", (k) -> convertedRegionCode);
+      payload.computeIfAbsent(
+          "ru_ref", (k) -> source == FIELD_SERVICE ? caseIdStr : caseContainer.getUprn());
+      payload.computeIfAbsent("case_id", (k) -> caseIdStr);
+      payload.computeIfAbsent(
+          "display_address",
+          (k) ->
+              buildDisplayAddress(
+                  caseContainer.getAddressLine1(),
+                  caseContainer.getAddressLine2(),
+                  caseContainer.getAddressLine3(),
+                  caseContainer.getTownName(),
+                  caseContainer.getPostcode()));
+      payload.computeIfAbsent("survey", (k) -> caseContainer.getSurveyType());
     }
-    if (accountServiceLogoutUrl != null) {
-      payload.put("account_service_log_out_url", accountServiceLogoutUrl);
-    }
 
-    payload.put("channel", channel.name().toLowerCase());
-    payload.put("user_id", userId);
-    payload.put("questionnaire_id", questionnaireId);
-    payload.put("eq_id", "census"); // hardcoded for rehearsal
-    payload.put("period_id", "2019"); // hardcoded for rehearsal
-    payload.put("form_type", "individual_gb_eng"); // hardcoded for rehearsal
-    payload.put("survey", caseContainer.getSurveyType());
+    payload.computeIfAbsent("language_code", (k) -> language.getIsoLikeCode());
+    payload.computeIfAbsent("response_id", (k) -> questionnaireId);
+    payload.computeIfAbsent("account_service_url", (k) -> accountServiceUrl);
+    payload.computeIfAbsent("account_service_log_out_url", (k) -> accountServiceLogoutUrl);
+    payload.computeIfAbsent("channel", (k) -> channel.name().toLowerCase());
+    payload.computeIfAbsent("user_id", (k) -> userId);
+    payload.computeIfAbsent("roles", (k) -> role);
+    payload.computeIfAbsent("questionnaire_id", (k) -> questionnaireId);
 
+    payload.computeIfAbsent("eq_id", (k) -> "census"); // hardcoded for rehearsal
+    payload.computeIfAbsent("period_id", (k) -> "2019"); // hardcoded for rehearsal
+    payload.computeIfAbsent("form_type", (k) -> "individual_gb_eng"); // hardcoded for rehearsal
     return payload;
   }
 

@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.eqlauncher.crypto;
+package uk.gov.ons.ctp.integration.eqlaunch.crypto;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasProperty;
@@ -16,8 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWSHelper;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.Key;
 
 public class JWSHelperTest {
 

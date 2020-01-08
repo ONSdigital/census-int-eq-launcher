@@ -49,7 +49,7 @@ public class JWEHelper {
   private JWEHeader buildHeader(Key key) {
 
     JWEHeader jweHeader =
-        new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP, EncryptionMethod.A256GCM)
+        new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A256GCM)
             .keyID(key.getKid())
             .build();
     return jweHeader;

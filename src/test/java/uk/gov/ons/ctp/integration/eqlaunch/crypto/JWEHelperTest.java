@@ -1,4 +1,4 @@
-package uk.gov.ons.ctp.integration.eqlauncher.crypto;
+package uk.gov.ons.ctp.integration.eqlaunch.crypto;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasProperty;
@@ -20,8 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWEHelper;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.Key;
 
 public class JWEHelperTest {
 
@@ -72,7 +70,7 @@ public class JWEHelperTest {
     thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
 
     JWEHeader jweHeader =
-        new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP, EncryptionMethod.A256GCM).build();
+        new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A256GCM).build();
     JWEObject jweObject = new JWEObject(jweHeader, new Payload(""));
 
     RSAKey rsaJWK = new RSAKeyGenerator(4096).keyID("123").generate();
@@ -88,7 +86,9 @@ public class JWEHelperTest {
     thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
 
     JWEHeader jweHeader =
-        new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP, EncryptionMethod.A256GCM).keyID("").build();
+        new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A256GCM)
+            .keyID("")
+            .build();
     JWEObject jweObject = new JWEObject(jweHeader, new Payload(""));
 
     RSAKey rsaJWK = new RSAKeyGenerator(4096).keyID("123").generate();
@@ -124,7 +124,9 @@ public class JWEHelperTest {
 
     RSAKey rsaJWKEncrypt = new RSAKeyGenerator(4096).keyID("456").generate();
     JWEHeader jweHeader =
-        new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP, EncryptionMethod.A256GCM).keyID("").build();
+        new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A256GCM)
+            .keyID("")
+            .build();
     JWEObject jweObject = new JWEObject(jweHeader, new Payload(""));
     jweObject.encrypt(new RSAEncrypter(rsaJWKEncrypt));
 
