@@ -1,6 +1,7 @@
 package uk.gov.ons.ctp.integration.eqlaunch.service.impl;
 
 import static uk.gov.ons.ctp.common.model.Source.FIELD_SERVICE;
+
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,24 +23,40 @@ public class EqLaunchServiceImpl implements EqLaunchService {
   private static final String ROLE_FLUSHER = "flusher";
   private Codec codec = new Codec();
 
-  public String getEqFieldLaunchJwe(Language language, Source source, Channel channel,
-      CaseContainerDTO caseContainer, String userId, String questionnaireId,
-      String accountServiceUrl, String accountServiceLogoutUrl, KeyStore keyStore)
+  public String getEqLaunchJwe(
+      Language language,
+      Source source,
+      Channel channel,
+      CaseContainerDTO caseContainer,
+      String userId,
+      String questionnaireId,
+      String accountServiceUrl,
+      String accountServiceLogoutUrl,
+      KeyStore keyStore)
       throws CTPException {
 
-    Map<String, Object> payload = createPayloadMap(language, source, channel, caseContainer,
-        userId, null, questionnaireId, accountServiceUrl, accountServiceLogoutUrl);
+    Map<String, Object> payload =
+        createPayloadMap(
+            language,
+            source,
+            channel,
+            caseContainer,
+            userId,
+            null,
+            questionnaireId,
+            accountServiceUrl,
+            accountServiceLogoutUrl);
 
     return codec.encrypt(payload, "authentication", keyStore);
   }
 
-  public String getEqFlushLaunchJwe(Language language, Source source, Channel channel,
-      String questionnaireId,
-      KeyStore keyStore)
+  public String getEqFlushLaunchJwe(
+      Language language, Source source, Channel channel, String questionnaireId, KeyStore keyStore)
       throws CTPException {
 
-    Map<String, Object> payload = createPayloadMap(language, source, channel, null,
-        null, ROLE_FLUSHER, questionnaireId, null, null);
+    Map<String, Object> payload =
+        createPayloadMap(
+            language, source, channel, null, null, ROLE_FLUSHER, questionnaireId, null, null);
 
     return codec.encrypt(payload, "authentication", keyStore);
   }
@@ -48,12 +65,10 @@ public class EqLaunchServiceImpl implements EqLaunchService {
    * This method builds the payload of a URL that will be used to launch EQ. This code replicates
    * the payload building done by the Python code in the census-rh-ui project for class /app/eq.py.
    *
-   * <p>
-   * EQ requires a payload string formatted as a Python serialised dictionary, so this code has to
-   * replicate all Python formatting quirks.
+   * <p>EQ requires a payload string formatted as a Python serialised dictionary, so this code has
+   * to replicate all Python formatting quirks.
    *
-   * <p>
-   * This code assumes that the channel is CC or field, and will need the user_id field to be
+   * <p>This code assumes that the channel is CC or field, and will need the user_id field to be
    * cleared if it is ever used from RH.
    *
    * @param language
@@ -67,9 +82,17 @@ public class EqLaunchServiceImpl implements EqLaunchService {
    * @return
    * @throws CTPException
    */
-  Map<String, Object> createPayloadMap(Language language, Source source, Channel channel,
-      CaseContainerDTO caseContainer, String userId, String role, String questionnaireId,
-      String accountServiceUrl, String accountServiceLogoutUrl) throws CTPException {
+  Map<String, Object> createPayloadMap(
+      Language language,
+      Source source,
+      Channel channel,
+      CaseContainerDTO caseContainer,
+      String userId,
+      String role,
+      String questionnaireId,
+      String accountServiceUrl,
+      String accountServiceLogoutUrl)
+      throws CTPException {
 
     long currentTimeInSeconds = System.currentTimeMillis() / 1000;
 
@@ -81,22 +104,28 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     payload.computeIfAbsent("exp", (k) -> currentTimeInSeconds + (5 * 60));
 
     if (role == null || !role.equals(ROLE_FLUSHER)) {
-      Objects.requireNonNull(caseContainer, "CaseContainer mandatory unless role is '" + ROLE_FLUSHER + "'");
+      Objects.requireNonNull(
+          caseContainer, "CaseContainer mandatory unless role is '" + ROLE_FLUSHER + "'");
 
       payload.computeIfAbsent("case_type", (k) -> caseContainer.getCaseType());
       validateCase(source, caseContainer, questionnaireId);
       String caseIdStr = caseContainer.getId().toString();
-      payload.computeIfAbsent("collection_exercise_sid",
-          (k) -> caseContainer.getCollectionExerciseId().toString());
+      payload.computeIfAbsent(
+          "collection_exercise_sid", (k) -> caseContainer.getCollectionExerciseId().toString());
       String convertedRegionCode = convertRegionCode(caseContainer.getRegion());
       payload.computeIfAbsent("region_code", (k) -> convertedRegionCode);
-      payload.computeIfAbsent("ru_ref",
-          (k) -> source == FIELD_SERVICE ? caseIdStr : caseContainer.getUprn());
+      payload.computeIfAbsent(
+          "ru_ref", (k) -> source == FIELD_SERVICE ? caseIdStr : caseContainer.getUprn());
       payload.computeIfAbsent("case_id", (k) -> caseIdStr);
-      payload.computeIfAbsent("display_address",
-          (k) -> buildDisplayAddress(caseContainer.getAddressLine1(), caseContainer.getAddressLine2(),
-              caseContainer.getAddressLine3(), caseContainer.getTownName(),
-              caseContainer.getPostcode()));
+      payload.computeIfAbsent(
+          "display_address",
+          (k) ->
+              buildDisplayAddress(
+                  caseContainer.getAddressLine1(),
+                  caseContainer.getAddressLine2(),
+                  caseContainer.getAddressLine3(),
+                  caseContainer.getTownName(),
+                  caseContainer.getPostcode()));
       payload.computeIfAbsent("survey", (k) -> caseContainer.getSurveyType());
     }
 
@@ -108,7 +137,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     payload.computeIfAbsent("user_id", (k) -> userId);
     payload.computeIfAbsent("roles", (k) -> role);
     payload.computeIfAbsent("questionnaire_id", (k) -> questionnaireId);
-    
+
     payload.computeIfAbsent("eq_id", (k) -> "census"); // hardcoded for rehearsal
     payload.computeIfAbsent("period_id", (k) -> "2019"); // hardcoded for rehearsal
     payload.computeIfAbsent("form_type", (k) -> "individual_gb_eng"); // hardcoded for rehearsal
@@ -131,7 +160,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
 
   private void verifyNotNull(Object fieldValue, String fieldName, UUID caseId) throws CTPException {
     if (fieldValue == null) {
-      throw new CTPException(Fault.VALIDATION_FAILED,
+      throw new CTPException(
+          Fault.VALIDATION_FAILED,
           "No value supplied for " + fieldName + " field of case " + caseId);
     }
   }
@@ -156,8 +186,11 @@ public class EqLaunchServiceImpl implements EqLaunchService {
   // Create an address from the first 2 non-null parts of the address.
   // This replicates RHUI's creation of the display address.
   private String buildDisplayAddress(String... addressElements) {
-    String displayAddress = Arrays.stream(addressElements).filter(a -> a != null).limit(2)
-        .collect(Collectors.joining(", "));
+    String displayAddress =
+        Arrays.stream(addressElements)
+            .filter(a -> a != null)
+            .limit(2)
+            .collect(Collectors.joining(", "));
 
     return displayAddress;
   }

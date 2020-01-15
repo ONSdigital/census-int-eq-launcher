@@ -11,9 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.Codec;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.EQJOSEProvider;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
 
 /** Unit tests of the encryption and decryption of a payload */
 public class CodecTest {
