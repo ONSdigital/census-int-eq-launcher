@@ -23,7 +23,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
   private static final String ROLE_FLUSHER = "flusher";
   private Codec codec = new Codec();
 
-  public String getEqFieldLaunchJwe(
+  public String getEqLaunchJwe(
       Language language,
       Source source,
       Channel channel,
