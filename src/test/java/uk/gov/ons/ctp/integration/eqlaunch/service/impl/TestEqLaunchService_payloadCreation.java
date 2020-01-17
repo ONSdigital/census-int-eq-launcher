@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.Test;
+import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.model.Channel;
 import uk.gov.ons.ctp.common.model.Language;
 import uk.gov.ons.ctp.common.model.Source;
@@ -357,6 +358,94 @@ public class TestEqLaunchService_payloadCreation {
     String payloadStringFromSimpleCall =
         eqLaunchService.getEqFlushLaunchJwe(
             language, source, channel, questionnaireId, keyStoreEncryption);
+
+    // decrypt it
+    String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
+
+    // turn it back into a map
+    ObjectMapper mapper = new ObjectMapper();
+    TypeReference<HashMap<String, Object>> typeRef =
+        new TypeReference<HashMap<String, Object>>() {};
+    Map<String, Object> payloadMapFromSimpleCall = mapper.readValue(decrypted, typeRef);
+
+    assertEquals(
+        "expectedMap should equal the cleaned map from the simple call",
+        expectedMap,
+        cleanPayloadMap(payloadMapFromSimpleCall));
+  }
+
+  @Test
+  public void createEqLaunchPayload() throws Exception {
+    EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl();
+    KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
+    KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION);
+    EQJOSEProvider codec = new Codec();
+
+    // Load case
+    CaseContainerDTO caseData = FixtureHelper.loadClassFixtures(CaseContainerDTO[].class).get(0);
+
+    // create expectation
+    Map<String, Object> expectedMap = new HashMap<>();
+    expectedMap.put("jti", "88888888-8888-8888-8888-888888888888");
+    expectedMap.put("tx_id", "88888888-8888-8888-8888-888888888888");
+    expectedMap.put("iat", "12345");
+    expectedMap.put("exp", "12345");
+    expectedMap.put("language_code", "en");
+    expectedMap.put("response_id", "11100000009");
+    expectedMap.put("channel", "cc");
+    expectedMap.put("questionnaire_id", "11100000009");
+    expectedMap.put("eq_id", "census");
+    expectedMap.put("period_id", "2019");
+    expectedMap.put("form_type", "individual_gb_eng");
+    expectedMap.put("case_type", caseData.getCaseType());
+    expectedMap.put("collection_exercise_sid", caseData.getCollectionExerciseId().toString());
+    expectedMap.put("region_code", "GB-ENG");
+    expectedMap.put("ru_ref", caseData.getUprn());
+    expectedMap.put("case_id", caseData.getId().toString());
+    expectedMap.put(
+        "display_address", caseData.getAddressLine1() + ", " + caseData.getAddressLine2());
+    expectedMap.put("survey", caseData.getSurveyType());
+    expectedMap.put("user_id", "123456");
+    expectedMap.put("account_service_log_out_url", "https://localhost/questionnaireSaved");
+
+    // create params for code under test
+    Language language = Language.ENGLISH;
+    Source source = Source.CONTACT_CENTRE_API;
+    Channel channel = Channel.CC;
+    String questionnaireId = "11100000009";
+    String agentId = "123456";
+    String accountServiceLogoutUrl = "https://localhost/questionnaireSaved";
+
+    // Run code under to test to get the payload map.
+    Map<String, Object> payloadMapFromComplexCall =
+        eqLaunchService.createPayloadMap(
+            language,
+            source,
+            channel,
+            caseData,
+            agentId,
+            null,
+            questionnaireId,
+            null,
+            accountServiceLogoutUrl);
+
+    assertEquals(
+        "expectedMap should equal the cleaned map from the complex call",
+        expectedMap,
+        cleanPayloadMap(payloadMapFromComplexCall));
+
+    // Run code under test to get encrypted payload string
+    String payloadStringFromSimpleCall =
+        eqLaunchService.getEqLaunchJwe(
+            language,
+            source,
+            channel,
+            caseData,
+            agentId,
+            questionnaireId,
+            null,
+            accountServiceLogoutUrl,
+            keyStoreEncryption);
 
     // decrypt it
     String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
