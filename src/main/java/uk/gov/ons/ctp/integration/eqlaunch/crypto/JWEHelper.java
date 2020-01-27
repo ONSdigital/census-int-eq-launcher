@@ -30,7 +30,7 @@ public class JWEHelper {
    * @throws CTPException
    */
   public String encrypt(JWSObject jws, Key key) throws CTPException {
-
+    log.with(key.getKid()).debug("Encrypting with public key");
     JWEHeader jweHeader = buildHeader(key);
     Payload payload = new Payload(jws);
     JWEObject jweObject = new JWEObject(jweHeader, payload);

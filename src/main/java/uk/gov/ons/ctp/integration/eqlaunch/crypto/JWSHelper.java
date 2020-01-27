@@ -34,6 +34,7 @@ public class JWSHelper {
    */
   public JWSObject encode(Map<String, Object> claims, Key key) throws CTPException {
 
+    log.with(key.getKid()).debug("Encoding with public key");
     JWSHeader jwsHeader = buildHeader(key);
     Payload jwsClaims = buildClaims(claims);
     JWSObject jwsObject = new JWSObject(jwsHeader, jwsClaims);
