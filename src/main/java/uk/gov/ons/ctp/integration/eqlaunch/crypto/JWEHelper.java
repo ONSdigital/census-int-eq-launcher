@@ -48,8 +48,9 @@ public class JWEHelper {
 
   private JWEHeader buildHeader(Key key) {
 
+    // We HAVE to use the deprecated Algo to remain compatible with EQ
     JWEHeader jweHeader =
-        new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A256GCM)
+        new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP, EncryptionMethod.A256GCM)
             .keyID(key.getKid())
             .build();
     return jweHeader;
