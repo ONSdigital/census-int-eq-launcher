@@ -1,13 +1,14 @@
 package uk.gov.ons.ctp.integration.eqlaunch.service.impl;
 
 import static uk.gov.ons.ctp.common.model.Source.FIELD_SERVICE;
-
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.common.model.Channel;
@@ -20,6 +21,7 @@ import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 public class EqLaunchServiceImpl implements EqLaunchService {
 
+  private static final Logger log = LoggerFactory.getLogger(EqLaunchServiceImpl.class);
   private static final String ROLE_FLUSHER = "flusher";
   private Codec codec = new Codec();
 
@@ -141,6 +143,9 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     payload.computeIfAbsent("eq_id", (k) -> "census"); // hardcoded for rehearsal
     payload.computeIfAbsent("period_id", (k) -> "2019"); // hardcoded for rehearsal
     payload.computeIfAbsent("form_type", (k) -> "individual_gb_eng"); // hardcoded for rehearsal
+
+    log.with("payload", payload).debug("Payload for EQ");
+
     return payload;
   }
 
