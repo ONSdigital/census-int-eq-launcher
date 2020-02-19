@@ -16,12 +16,18 @@ public interface EqLaunchService {
       CaseContainerDTO caseContainer,
       String userId,
       String questionnaireId,
+      String formType,
       String accountServiceUrl,
       String accountServiceLogoutUrl,
       KeyStore keyStore)
       throws CTPException;
 
   String getEqFlushLaunchJwe(
-      Language language, Source source, Channel channel, String questionnaireId, KeyStore keyStore)
+      Language language,
+      Source source,
+      Channel channel,
+      String questionnaireId,
+      String formType,
+      KeyStore keyStore)
       throws CTPException;
 }

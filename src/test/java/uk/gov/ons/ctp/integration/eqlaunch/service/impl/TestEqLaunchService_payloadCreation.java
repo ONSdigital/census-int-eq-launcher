@@ -236,7 +236,7 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("questionnaire_id", "11100000009");
     expectedMap.put("eq_id", "census");
     expectedMap.put("period_id", "2019");
-    expectedMap.put("form_type", "individual_gb_eng");
+    expectedMap.put("form_type", "H");
     expectedMap.put("survey", "CENSUS");
 
     // create params for code under test
@@ -246,6 +246,7 @@ public class TestEqLaunchService_payloadCreation {
     CaseContainerDTO caseContainer = new CaseContainerDTO();
     String userId = "1234567890";
     String questionnaireId = "11100000009";
+    String formType = "H";
     String accountServiceUrl = "http://localhost:9092/start";
     String accountServiceLogoutUrl = "http://localhost:9092/start/save-and-exit";
 
@@ -271,6 +272,7 @@ public class TestEqLaunchService_payloadCreation {
             userId,
             null,
             questionnaireId,
+            formType,
             accountServiceUrl,
             accountServiceLogoutUrl);
 
@@ -288,6 +290,7 @@ public class TestEqLaunchService_payloadCreation {
             caseContainer,
             userId,
             questionnaireId,
+            formType,
             accountServiceUrl,
             accountServiceLogoutUrl,
             keyStoreEncryption);
@@ -336,18 +339,28 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("questionnaire_id", "11100000009");
     expectedMap.put("eq_id", "census");
     expectedMap.put("period_id", "2019");
-    expectedMap.put("form_type", "individual_gb_eng");
+    expectedMap.put("form_type", "H");
 
     // create params for code under test
     Language language = Language.ENGLISH;
     Source source = Source.RESPONDENT_HOME;
     Channel channel = Channel.RH;
     String questionnaireId = "11100000009";
+    String formType = "H";
 
     // Run code under to test to get the payload map.
     Map<String, Object> payloadMapFromComplexCall =
         eqLaunchService.createPayloadMap(
-            language, source, channel, null, null, "flusher", questionnaireId, null, null);
+            language,
+            source,
+            channel,
+            null,
+            null,
+            "flusher",
+            questionnaireId,
+            formType,
+            null,
+            null);
 
     assertEquals(
         "expectedMap should equal the cleaned map from the complex call",
@@ -357,7 +370,7 @@ public class TestEqLaunchService_payloadCreation {
     // Run code under test to get encrypted payload string
     String payloadStringFromSimpleCall =
         eqLaunchService.getEqFlushLaunchJwe(
-            language, source, channel, questionnaireId, keyStoreEncryption);
+            language, source, channel, questionnaireId, formType, keyStoreEncryption);
 
     // decrypt it
     String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
@@ -396,7 +409,7 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("questionnaire_id", "11100000009");
     expectedMap.put("eq_id", "census");
     expectedMap.put("period_id", "2019");
-    expectedMap.put("form_type", "individual_gb_eng");
+    expectedMap.put("form_type", "H");
     expectedMap.put("case_type", caseData.getCaseType());
     expectedMap.put("collection_exercise_sid", caseData.getCollectionExerciseId().toString());
     expectedMap.put("region_code", "GB-ENG");
@@ -413,6 +426,7 @@ public class TestEqLaunchService_payloadCreation {
     Source source = Source.CONTACT_CENTRE_API;
     Channel channel = Channel.CC;
     String questionnaireId = "11100000009";
+    String formType = "H";
     String agentId = "123456";
     String accountServiceLogoutUrl = "https://localhost/questionnaireSaved";
 
@@ -426,6 +440,7 @@ public class TestEqLaunchService_payloadCreation {
             agentId,
             null,
             questionnaireId,
+            formType,
             null,
             accountServiceLogoutUrl);
 
@@ -443,6 +458,7 @@ public class TestEqLaunchService_payloadCreation {
             caseData,
             agentId,
             questionnaireId,
+            formType,
             null,
             accountServiceLogoutUrl,
             keyStoreEncryption);
