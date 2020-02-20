@@ -33,6 +33,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       CaseContainerDTO caseContainer,
       String userId,
       String questionnaireId,
+      String formType,
       String accountServiceUrl,
       String accountServiceLogoutUrl,
       KeyStore keyStore)
@@ -47,6 +48,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
             userId,
             null,
             questionnaireId,
+            formType,
             accountServiceUrl,
             accountServiceLogoutUrl);
 
@@ -54,12 +56,26 @@ public class EqLaunchServiceImpl implements EqLaunchService {
   }
 
   public String getEqFlushLaunchJwe(
-      Language language, Source source, Channel channel, String questionnaireId, KeyStore keyStore)
+      Language language,
+      Source source,
+      Channel channel,
+      String questionnaireId,
+      String formType,
+      KeyStore keyStore)
       throws CTPException {
 
     Map<String, Object> payload =
         createPayloadMap(
-            language, source, channel, null, null, ROLE_FLUSHER, questionnaireId, null, null);
+            language,
+            source,
+            channel,
+            null,
+            null,
+            ROLE_FLUSHER,
+            questionnaireId,
+            formType,
+            null,
+            null);
 
     return codec.encrypt(payload, "authentication", keyStore);
   }
@@ -93,6 +109,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       String userId,
       String role,
       String questionnaireId,
+      String formType,
       String accountServiceUrl,
       String accountServiceLogoutUrl)
       throws CTPException {
@@ -143,7 +160,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
 
     payload.computeIfAbsent("eq_id", (k) -> "census"); // hardcoded for rehearsal
     payload.computeIfAbsent("period_id", (k) -> "2019"); // hardcoded for rehearsal
-    payload.computeIfAbsent("form_type", (k) -> "individual_gb_eng"); // hardcoded for rehearsal
+    payload.computeIfAbsent("form_type", (k) -> formType);
 
     log.with("payload", payload).debug("Payload for EQ");
 

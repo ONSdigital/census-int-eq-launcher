@@ -259,7 +259,7 @@ public class CodecTest {
     test.put("questionnaire_id", "11100000009");
     test.put("eq_id", "census");
     test.put("period_id", "2019");
-    test.put("form_type", "individual_gb_eng");
+    test.put("form_type", "H");
     test.put("survey", "CENSUS");
 
     String jwe = codec.encrypt(test, "encryption", keyStoreEncryption);
