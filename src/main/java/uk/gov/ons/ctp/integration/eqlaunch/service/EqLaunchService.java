@@ -1,9 +1,9 @@
 package uk.gov.ons.ctp.integration.eqlaunch.service;
 
+import uk.gov.ons.ctp.common.domain.Channel;
+import uk.gov.ons.ctp.common.domain.Language;
+import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.common.model.Channel;
-import uk.gov.ons.ctp.common.model.Language;
-import uk.gov.ons.ctp.common.model.Source;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
 

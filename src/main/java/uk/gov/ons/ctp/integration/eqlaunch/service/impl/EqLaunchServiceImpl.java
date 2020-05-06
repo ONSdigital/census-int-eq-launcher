@@ -1,6 +1,6 @@
 package uk.gov.ons.ctp.integration.eqlaunch.service.impl;
 
-import static uk.gov.ons.ctp.common.model.Source.FIELD_SERVICE;
+import static uk.gov.ons.ctp.common.domain.Source.FIELD_SERVICE;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -10,11 +10,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import uk.gov.ons.ctp.common.domain.Channel;
+import uk.gov.ons.ctp.common.domain.Language;
+import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
-import uk.gov.ons.ctp.common.model.Channel;
-import uk.gov.ons.ctp.common.model.Language;
-import uk.gov.ons.ctp.common.model.Source;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.Codec;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
