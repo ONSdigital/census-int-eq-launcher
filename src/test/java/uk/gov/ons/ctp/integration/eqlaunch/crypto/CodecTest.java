@@ -1,15 +1,13 @@
 package uk.gov.ons.ctp.integration.eqlaunch.crypto;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import uk.gov.ons.ctp.common.error.CTPException;
 
 /** Unit tests of the encryption and decryption of a payload */
@@ -231,8 +229,6 @@ public class CodecTest {
           + ENCRYPTION_PRIVATE_VALUE
           + "\"}}}";
 
-  @Rule public ExpectedException thrown = ExpectedException.none();
-
   @Test
   public void testEncryptDecrypt() throws Exception {
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
@@ -275,9 +271,12 @@ public class CodecTest {
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION_NO_PRIVATE);
     EQJOSEProvider codec = new Codec();
 
-    thrown.expect(CTPException.class);
-    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
-    codec.encrypt(new HashMap<String, Object>(), "encryption", keyStoreEncryption);
+    CTPException e =
+        assertThrows(
+            CTPException.class,
+            () -> codec.encrypt(new HashMap<String, Object>(), "encryption", keyStoreEncryption));
+
+    assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
   @Test
@@ -285,9 +284,12 @@ public class CodecTest {
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION_NO_PUBLIC);
     EQJOSEProvider codec = new Codec();
 
-    thrown.expect(CTPException.class);
-    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
-    codec.encrypt(new HashMap<String, Object>(), "encryption", keyStoreEncryption);
+    CTPException e =
+        assertThrows(
+            CTPException.class,
+            () -> codec.encrypt(new HashMap<String, Object>(), "encryption", keyStoreEncryption));
+
+    assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
   @Test
@@ -298,10 +300,9 @@ public class CodecTest {
 
     String jwe = codec.encrypt(new HashMap<String, Object>(), "encryption", keyStoreEncryption);
 
-    thrown.expect(CTPException.class);
-    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
+    CTPException e = assertThrows(CTPException.class, () -> codec.decrypt(jwe, keyStoreDecryption));
 
-    codec.decrypt(jwe, keyStoreDecryption);
+    assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
   @Test
@@ -312,9 +313,8 @@ public class CodecTest {
 
     String jwe = codec.encrypt(new HashMap<String, Object>(), "encryption", keyStoreEncryption);
 
-    thrown.expect(CTPException.class);
-    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
+    CTPException e = assertThrows(CTPException.class, () -> codec.decrypt(jwe, keyStoreDecryption));
 
-    codec.decrypt(jwe, keyStoreDecryption);
+    assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 }

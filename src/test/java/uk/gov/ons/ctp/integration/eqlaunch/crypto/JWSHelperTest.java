@@ -1,7 +1,7 @@
 package uk.gov.ons.ctp.integration.eqlaunch.crypto;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -12,9 +12,7 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import java.util.HashMap;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import uk.gov.ons.ctp.common.error.CTPException;
 
 public class JWSHelperTest {
@@ -90,53 +88,40 @@ public class JWSHelperTest {
 
   private JWSHelper jwsHelper = new JWSHelper();
 
-  @Rule public ExpectedException thrown = ExpectedException.none();
-
   @Test
   public void testEncodeBadKey() throws Exception {
-
-    thrown.expect(CTPException.class);
-    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
-
     Key key = new Key();
     // Need a private key to sign JWS
     key.setValue(SIGNING_PUBLIC_VALUE);
-    jwsHelper.encode(new HashMap<String, Object>(), key);
+    CTPException e =
+        assertThrows(
+            CTPException.class, () -> jwsHelper.encode(new HashMap<String, Object>(), key));
+    assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
   @Test
   public void testGetKidNotInHeader() throws Exception {
-
-    thrown.expect(CTPException.class);
-    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
-
     JWSHeader jwsHeader =
         new JWSHeader.Builder(JWSAlgorithm.RS256).type(JOSEObjectType.JWT).build();
     JWSObject jwsObject = new JWSObject(jwsHeader, new Payload(""));
 
-    jwsHelper.getKid(jwsObject);
+    CTPException e = assertThrows(CTPException.class, () -> jwsHelper.getKid(jwsObject));
+    assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
   @Test
   public void testGetKidEmptyString() throws Exception {
-
-    thrown.expect(CTPException.class);
-    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
-
     JWSHeader jwsHeader =
         new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("").type(JOSEObjectType.JWT).build();
 
     JWSObject jwsObject = new JWSObject(jwsHeader, new Payload(""));
 
-    jwsHelper.getKid(jwsObject);
+    CTPException e = assertThrows(CTPException.class, () -> jwsHelper.getKid(jwsObject));
+    assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
   @Test
   public void testDecodeWrongKey() throws Exception {
-
-    thrown.expect(CTPException.class);
-    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
-
     RSAKey rsaJWK = new RSAKeyGenerator(4096).keyID("123").generate();
 
     JWSHeader jwsHeader =
@@ -148,15 +133,12 @@ public class JWSHelperTest {
 
     Key key = new Key();
     key.setValue(SIGNING_PUBLIC_VALUE);
-    jwsHelper.decode(jwsObject, key);
+    CTPException e = assertThrows(CTPException.class, () -> jwsHelper.decode(jwsObject, key));
+    assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
   @Test
   public void testDecodeBadKey() throws Exception {
-
-    thrown.expect(CTPException.class);
-    thrown.expect(hasProperty("fault", is(CTPException.Fault.SYSTEM_ERROR)));
-
     RSAKey rsaJWK = new RSAKeyGenerator(4096).keyID("123").generate();
 
     JWSHeader jwsHeader =
@@ -169,6 +151,7 @@ public class JWSHelperTest {
     Key key = new Key();
     // Need a public key to verify JWS
     key.setValue(SIGNING_PRIVATE_VALUE);
-    jwsHelper.decode(jwsObject, key);
+    CTPException e = assertThrows(CTPException.class, () -> jwsHelper.decode(jwsObject, key));
+    assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 }
