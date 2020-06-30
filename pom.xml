@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>uk.gov.ons.ctp.integration.common</groupId>
   <artifactId>eq-launcher</artifactId>
-  <version>0.0.27-SNAPSHOT</version>
+  <version>0.0.27-SNAPSHOT-CR997</version>
   <packaging>jar</packaging>
 
   <name>CTP : Integration EQ Launcher</name>
@@ -67,7 +67,7 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>census-int-case-api-client</artifactId>
-      <version>0.0.16</version>
+      <version>0.0.17-SNAPSHOT-CR997</version>
     </dependency>
 
     <dependency>
