@@ -4,12 +4,15 @@ import static uk.gov.ons.ctp.common.domain.Source.FIELD_SERVICE;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.bouncycastle.util.encoders.Hex;
 import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.Language;
 import uk.gov.ons.ctp.common.domain.Source;
@@ -36,7 +39,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       String formType,
       String accountServiceUrl,
       String accountServiceLogoutUrl,
-      KeyStore keyStore)
+      KeyStore keyStore,
+      String salt)
       throws CTPException {
 
     Map<String, Object> payload =
@@ -50,7 +54,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
             questionnaireId,
             formType,
             accountServiceUrl,
-            accountServiceLogoutUrl);
+            accountServiceLogoutUrl,
+            salt);
 
     return codec.encrypt(payload, "authentication", keyStore);
   }
@@ -61,7 +66,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       Channel channel,
       String questionnaireId,
       String formType,
-      KeyStore keyStore)
+      KeyStore keyStore,
+      String salt)
       throws CTPException {
 
     Map<String, Object> payload =
@@ -75,7 +81,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
             questionnaireId,
             formType,
             null,
-            null);
+            null,
+            salt);
 
     return codec.encrypt(payload, "authentication", keyStore);
   }
@@ -111,7 +118,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       String questionnaireId,
       String formType,
       String accountServiceUrl,
-      String accountServiceLogoutUrl)
+      String accountServiceLogoutUrl,
+      String salt)
       throws CTPException {
 
     long currentTimeInSeconds = System.currentTimeMillis() / 1000;
@@ -148,9 +156,9 @@ public class EqLaunchServiceImpl implements EqLaunchService {
                   caseContainer.getPostcode()));
       payload.computeIfAbsent("survey", (k) -> caseContainer.getSurveyType());
     }
-
+    String responseId = encryptResponseId(questionnaireId, salt);
     payload.computeIfAbsent("language_code", (k) -> language.getIsoLikeCode());
-    payload.computeIfAbsent("response_id", (k) -> questionnaireId);
+    payload.computeIfAbsent("response_id", (k) -> responseId);
     payload.computeIfAbsent("account_service_url", (k) -> accountServiceUrl);
     payload.computeIfAbsent("account_service_log_out_url", (k) -> accountServiceLogoutUrl);
     payload.computeIfAbsent("channel", (k) -> channel.name().toLowerCase());
@@ -214,7 +222,21 @@ public class EqLaunchServiceImpl implements EqLaunchService {
             .filter(a -> a != null)
             .limit(2)
             .collect(Collectors.joining(", "));
-
     return displayAddress;
+  }
+
+  // Creates encrypted response id from SALT and questionnaireId
+  private String encryptResponseId(String questionnaireId, String salt) throws CTPException {
+    StringBuilder responseId = new StringBuilder(questionnaireId);
+    try {
+      MessageDigest md = MessageDigest.getInstance("SHA-256");
+      md.update(salt.getBytes());
+      byte[] bytes = md.digest(questionnaireId.getBytes());
+      responseId.append((new String(Hex.encode(bytes)).substring(0, 16)));
+    } catch (NoSuchAlgorithmException ex) {
+      log.error("SHA256 Hashing error for questionnaire id {}", questionnaireId);
+      throw new CTPException(Fault.SYSTEM_ERROR, ex.getMessage());
+    }
+    return responseId.toString();
   }
 }

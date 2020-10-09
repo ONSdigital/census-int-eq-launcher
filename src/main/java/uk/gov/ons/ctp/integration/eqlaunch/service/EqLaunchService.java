@@ -19,7 +19,8 @@ public interface EqLaunchService {
       String formType,
       String accountServiceUrl,
       String accountServiceLogoutUrl,
-      KeyStore keyStore)
+      KeyStore keyStore,
+      String salt)
       throws CTPException;
 
   String getEqFlushLaunchJwe(
@@ -28,6 +29,7 @@ public interface EqLaunchService {
       Channel channel,
       String questionnaireId,
       String formType,
-      KeyStore keyStore)
+      KeyStore keyStore,
+      String salt)
       throws CTPException;
 }

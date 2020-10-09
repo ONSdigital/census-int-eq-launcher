@@ -4,9 +4,13 @@ import static org.junit.Assert.assertEquals;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.bouncycastle.util.encoders.Hex;
+import org.junit.Assert;
 import org.junit.Test;
 import uk.gov.ons.ctp.common.FixtureHelper;
 import uk.gov.ons.ctp.common.domain.Channel;
@@ -194,6 +198,7 @@ public class TestEqLaunchService_payloadCreation {
           + ", \"value\": \""
           + ENCRYPTION_PRIVATE_VALUE
           + "\"}}}";
+  private static String SALT = "CENSUS";
 
   /**
    * Calls both the public and package methods in the class under test and asserts that each returns
@@ -209,6 +214,7 @@ public class TestEqLaunchService_payloadCreation {
     EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl();
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
     KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION);
+
     EQJOSEProvider codec = new Codec();
 
     // create expectation
@@ -228,7 +234,7 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("case_id", caseId.toString());
     expectedMap.put("language_code", "en");
     expectedMap.put("display_address", "ONS, Segensworth\'s Road");
-    expectedMap.put("response_id", "11100000009");
+    expectedMap.put("response_id", getEncryptResponseId("11100000009"));
     expectedMap.put("account_service_url", "http://localhost:9092/start");
     expectedMap.put("account_service_log_out_url", "http://localhost:9092/start/save-and-exit");
     expectedMap.put("channel", "field");
@@ -274,7 +280,8 @@ public class TestEqLaunchService_payloadCreation {
             questionnaireId,
             formType,
             accountServiceUrl,
-            accountServiceLogoutUrl);
+            accountServiceLogoutUrl,
+            SALT);
 
     assertEquals(
         "expectedMap should equal the cleaned map from the complex call",
@@ -293,7 +300,8 @@ public class TestEqLaunchService_payloadCreation {
             formType,
             accountServiceUrl,
             accountServiceLogoutUrl,
-            keyStoreEncryption);
+            keyStoreEncryption,
+            SALT);
 
     // decrypt it
     String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
@@ -333,7 +341,7 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("iat", "12345");
     expectedMap.put("exp", "12345");
     expectedMap.put("language_code", "en");
-    expectedMap.put("response_id", "11100000009");
+    expectedMap.put("response_id", getEncryptResponseId("11100000009"));
     expectedMap.put("channel", "rh");
     expectedMap.put("roles", "flusher");
     expectedMap.put("questionnaire_id", "11100000009");
@@ -360,7 +368,8 @@ public class TestEqLaunchService_payloadCreation {
             questionnaireId,
             formType,
             null,
-            null);
+            null,
+            SALT);
 
     assertEquals(
         "expectedMap should equal the cleaned map from the complex call",
@@ -370,7 +379,7 @@ public class TestEqLaunchService_payloadCreation {
     // Run code under test to get encrypted payload string
     String payloadStringFromSimpleCall =
         eqLaunchService.getEqFlushLaunchJwe(
-            language, source, channel, questionnaireId, formType, keyStoreEncryption);
+            language, source, channel, questionnaireId, formType, keyStoreEncryption, SALT);
 
     // decrypt it
     String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
@@ -404,7 +413,7 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("iat", "12345");
     expectedMap.put("exp", "12345");
     expectedMap.put("language_code", "en");
-    expectedMap.put("response_id", "11100000009");
+    expectedMap.put("response_id", getEncryptResponseId("11100000009"));
     expectedMap.put("channel", "cc");
     expectedMap.put("questionnaire_id", "11100000009");
     expectedMap.put("eq_id", "census");
@@ -442,7 +451,8 @@ public class TestEqLaunchService_payloadCreation {
             questionnaireId,
             formType,
             null,
-            accountServiceLogoutUrl);
+            accountServiceLogoutUrl,
+            SALT);
 
     assertEquals(
         "expectedMap should equal the cleaned map from the complex call",
@@ -461,7 +471,8 @@ public class TestEqLaunchService_payloadCreation {
             formType,
             null,
             accountServiceLogoutUrl,
-            keyStoreEncryption);
+            keyStoreEncryption,
+            SALT);
 
     // decrypt it
     String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
@@ -484,5 +495,18 @@ public class TestEqLaunchService_payloadCreation {
     payloadMap.put("iat", "12345");
     payloadMap.put("exp", "12345");
     return payloadMap;
+  }
+
+  public String getEncryptResponseId(String questionnaireId) {
+    StringBuilder responseId = new StringBuilder(questionnaireId);
+    try {
+      MessageDigest md = MessageDigest.getInstance("SHA-256");
+      md.update(SALT.getBytes());
+      byte[] bytes = md.digest(questionnaireId.getBytes());
+      responseId.append((new String(Hex.encode(bytes)).substring(0, 16)));
+    } catch (NoSuchAlgorithmException e) {
+      Assert.fail("SHA256 Hashing error for questionnaire id " + questionnaireId);
+    }
+    return responseId.toString();
   }
 }
