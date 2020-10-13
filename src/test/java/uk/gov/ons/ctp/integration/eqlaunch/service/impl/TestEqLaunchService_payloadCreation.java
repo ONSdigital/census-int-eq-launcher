@@ -504,7 +504,6 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("case_type", caseData.getCaseType());
     expectedMap.put("collection_exercise_sid", caseData.getCollectionExerciseId().toString());
     expectedMap.put("region_code", "GB-ENG");
-    expectedMap.put("ru_ref", caseData.getUprn());
     expectedMap.put("case_id", caseData.getId().toString());
     expectedMap.put(
         "display_address", caseData.getAddressLine1() + ", " + caseData.getAddressLine2());
