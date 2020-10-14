@@ -46,6 +46,7 @@ public class JWEHelper {
     }
   }
 
+  @SuppressWarnings("deprecation")
   private JWEHeader buildHeader(Key key) {
 
     // We HAVE to use the deprecated Algo to remain compatible with EQ
