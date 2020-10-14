@@ -234,8 +234,9 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       byte[] bytes = md.digest(questionnaireId.getBytes());
       responseId.append((new String(Hex.encode(bytes)).substring(0, 16)));
     } catch (NoSuchAlgorithmException ex) {
-      log.error("SHA256 Hashing error for questionnaire id {}", questionnaireId);
-      throw new CTPException(Fault.SYSTEM_ERROR, ex.getMessage());
+      log.with(questionnaireId);
+      log.with(questionnaireId).error("No SHA-256 algorithm while encrypting questionnaire", ex);
+      throw new CTPException(Fault.SYSTEM_ERROR, ex);
     }
     return responseId.toString();
   }
