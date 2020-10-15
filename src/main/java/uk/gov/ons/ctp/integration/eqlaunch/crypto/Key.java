@@ -21,7 +21,8 @@ public class Key {
   /**
    * Return a JWK from Pem-encoded string
    *
-   * @throws CTPException
+   * @return JWK
+   * @throws CTPException on error
    */
   public JWK getJWK() throws CTPException {
     try {

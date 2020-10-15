@@ -30,7 +30,7 @@ public class JWSHelper {
    * @param claims to be signed
    * @param key with which to sign claims
    * @return JWSObject representing JWS token
-   * @throws CTPException
+   * @throws CTPException on error
    */
   public JWSObject encode(Map<String, Object> claims, Key key) throws CTPException {
 
@@ -69,9 +69,9 @@ public class JWSHelper {
   /**
    * Return key hint (Id) from JWS header
    *
-   * @param jwsObject
+   * @param jwsObject JWS object
    * @return String representing Key hint from header
-   * @throws CTPException
+   * @throws CTPException on error
    */
   public String getKid(JWSObject jwsObject) throws CTPException {
     String keyId = jwsObject.getHeader().getKeyID();
@@ -85,10 +85,10 @@ public class JWSHelper {
   /**
    * Check the signature of this JWS object against the provided Key.
    *
-   * @param jwsObject
-   * @param key
+   * @param jwsObject JWS object
+   * @param key key
    * @return JWS claims
-   * @throws CTPException
+   * @throws CTPException on error
    */
   public String decode(JWSObject jwsObject, Key key) throws CTPException {
     try {
