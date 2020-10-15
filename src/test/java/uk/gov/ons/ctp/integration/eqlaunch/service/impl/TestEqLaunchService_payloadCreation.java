@@ -460,9 +460,6 @@ public class TestEqLaunchService_payloadCreation {
   @Test
   public void createEqLaunchPayloadForSurveyTypeCCS() throws Exception {
     EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl();
-    KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
-    KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION);
-    EQJOSEProvider codec = new Codec();
 
     // Load case
     CaseContainerDTO caseData = FixtureHelper.loadClassFixtures(CaseContainerDTO[].class).get(1);
