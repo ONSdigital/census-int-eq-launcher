@@ -18,6 +18,7 @@ import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.Codec;
+import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchCoreData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
@@ -28,23 +29,23 @@ public class EqLaunchServiceImpl implements EqLaunchService {
   private Codec codec = new Codec();
 
   @Override
-  public String getEqLaunchJwe(
-      EqLaunchData launchData,
-      CaseContainerDTO caseContainer,
-      String userId,
-      String accountServiceUrl,
-      String accountServiceLogoutUrl)
-      throws CTPException {
+  public String getEqLaunchJwe(EqLaunchData launchData) throws CTPException {
+    EqLaunchCoreData coreLaunchData = launchData.coreCopy();
 
     Map<String, Object> payload =
         createPayloadMap(
-            launchData, caseContainer, userId, null, accountServiceUrl, accountServiceLogoutUrl);
+            coreLaunchData,
+            launchData.getCaseContainer(),
+            launchData.getUserId(),
+            null,
+            launchData.getAccountServiceUrl(),
+            launchData.getAccountServiceLogoutUrl());
 
     return codec.encrypt(payload, "authentication", launchData.getKeyStore());
   }
 
   @Override
-  public String getEqFlushLaunchJwe(EqLaunchData launchData) throws CTPException {
+  public String getEqFlushLaunchJwe(EqLaunchCoreData launchData) throws CTPException {
 
     Map<String, Object> payload =
         createPayloadMap(launchData, null, null, ROLE_FLUSHER, null, null);
@@ -62,19 +63,18 @@ public class EqLaunchServiceImpl implements EqLaunchService {
    * <p>This code assumes that the channel is CC or field, and will need the user_id field to be
    * cleared if it is ever used from RH.
    *
-   * @param language
-   * @param channel
-   * @param caseContainer
-   * @param userId
-   * @param role
-   * @param questionnaireId
-   * @param accountServiceUrl
-   * @param accountServiceLogoutUrl
+   * @param coreData core launch data
+   * @param caseContainer case container
+   * @param userId user id
+   * @param role role
+   * @param questionnaireId questionnaire ID
+   * @param accountServiceUrl service url
+   * @param accountServiceLogoutUrl logout url
    * @return
-   * @throws CTPException
+   * @throws CTPException on error
    */
   Map<String, Object> createPayloadMap(
-      EqLaunchData launchData,
+      EqLaunchCoreData coreData,
       CaseContainerDTO caseContainer,
       String userId,
       String role,
@@ -82,8 +82,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       String accountServiceLogoutUrl)
       throws CTPException {
 
-    String questionnaireId = launchData.getQuestionnaireId();
-    Source source = launchData.getSource();
+    String questionnaireId = coreData.getQuestionnaireId();
+    Source source = coreData.getSource();
 
     long currentTimeInSeconds = System.currentTimeMillis() / 1000;
 
@@ -119,19 +119,19 @@ public class EqLaunchServiceImpl implements EqLaunchService {
                   caseContainer.getPostcode()));
       payload.computeIfAbsent("survey", (k) -> caseContainer.getSurveyType());
     }
-    String responseId = encryptResponseId(questionnaireId, launchData.getSalt());
-    payload.computeIfAbsent("language_code", (k) -> launchData.getLanguage().getIsoLikeCode());
+    String responseId = encryptResponseId(questionnaireId, coreData.getSalt());
+    payload.computeIfAbsent("language_code", (k) -> coreData.getLanguage().getIsoLikeCode());
     payload.computeIfAbsent("response_id", (k) -> responseId);
     payload.computeIfAbsent("account_service_url", (k) -> accountServiceUrl);
     payload.computeIfAbsent("account_service_log_out_url", (k) -> accountServiceLogoutUrl);
-    payload.computeIfAbsent("channel", (k) -> launchData.getChannel().name().toLowerCase());
+    payload.computeIfAbsent("channel", (k) -> coreData.getChannel().name().toLowerCase());
     payload.computeIfAbsent("user_id", (k) -> userId);
     payload.computeIfAbsent("roles", (k) -> role);
     payload.computeIfAbsent("questionnaire_id", (k) -> questionnaireId);
 
     payload.computeIfAbsent("eq_id", (k) -> "census"); // hardcoded for rehearsal
     payload.computeIfAbsent("period_id", (k) -> "2019"); // hardcoded for rehearsal
-    payload.computeIfAbsent("form_type", (k) -> launchData.getFormType());
+    payload.computeIfAbsent("form_type", (k) -> coreData.getFormType());
 
     log.with("payload", payload).debug("Payload for EQ");
 

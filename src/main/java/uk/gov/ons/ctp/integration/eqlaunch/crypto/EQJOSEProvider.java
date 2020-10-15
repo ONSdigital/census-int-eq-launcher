@@ -17,7 +17,7 @@ public interface EQJOSEProvider {
    * @param keyPurpose e.g. authentication
    * @param keyStore Store of asymmetric keys for signing and encryption
    * @return String representing encrypted JWE token
-   * @throws CTPException
+   * @throws CTPException on error
    */
   String encrypt(Map<String, Object> claims, String keyPurpose, KeyStore keyStore)
       throws CTPException;
@@ -28,7 +28,7 @@ public interface EQJOSEProvider {
    * @param jwe JSON Web Encrypted token to decrypt.
    * @param keyStore Store of asymmetric keys for signing and encryption
    * @return String representing JWE payload
-   * @throws CTPException
+   * @throws CTPException on error
    */
   String decrypt(String jwe, KeyStore keyStore) throws CTPException;
 }

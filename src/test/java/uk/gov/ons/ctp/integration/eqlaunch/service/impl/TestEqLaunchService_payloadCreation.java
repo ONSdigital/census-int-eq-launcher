@@ -16,6 +16,7 @@ import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerD
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.Codec;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.EQJOSEProvider;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
+import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchCoreData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
 
 public class TestEqLaunchService_payloadCreation {
@@ -265,8 +266,8 @@ public class TestEqLaunchService_payloadCreation {
     caseContainer.setPostcode("PO15 5RR");
     caseContainer.setSurveyType("CENSUS");
 
-    EqLaunchData launchData =
-        EqLaunchData.builder()
+    EqLaunchCoreData coreLaunchData =
+        EqLaunchCoreData.builder()
             .language(language)
             .source(source)
             .channel(channel)
@@ -279,17 +280,23 @@ public class TestEqLaunchService_payloadCreation {
     // Run code under to test to get a payload
     Map<String, Object> payloadMapFromComplexCall =
         eqLaunchService.createPayloadMap(
-            launchData, caseContainer, userId, null, accountServiceUrl, accountServiceLogoutUrl);
+            coreLaunchData,
+            caseContainer,
+            userId,
+            null,
+            accountServiceUrl,
+            accountServiceLogoutUrl);
 
     assertEquals(
         "expectedMap should equal the cleaned map from the complex call",
         expectedMap,
         cleanPayloadMap(payloadMapFromComplexCall));
 
+    EqLaunchData launchData =
+        build(coreLaunchData, caseContainer, userId, accountServiceUrl, accountServiceLogoutUrl);
+
     // Run code under test to get encrypted payload string
-    String payloadStringFromSimpleCall =
-        eqLaunchService.getEqLaunchJwe(
-            launchData, caseContainer, userId, accountServiceUrl, accountServiceLogoutUrl);
+    String payloadStringFromSimpleCall = eqLaunchService.getEqLaunchJwe(launchData);
 
     // decrypt it
     String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
@@ -344,8 +351,8 @@ public class TestEqLaunchService_payloadCreation {
     String questionnaireId = "11100000009";
     String formType = "H";
 
-    EqLaunchData launchData =
-        EqLaunchData.builder()
+    EqLaunchCoreData launchData =
+        EqLaunchCoreData.builder()
             .language(language)
             .source(source)
             .channel(channel)
@@ -425,8 +432,8 @@ public class TestEqLaunchService_payloadCreation {
     String agentId = "123456";
     String accountServiceLogoutUrl = "https://localhost/questionnaireSaved";
 
-    EqLaunchData launchData =
-        EqLaunchData.builder()
+    EqLaunchCoreData coreLaunchData =
+        EqLaunchCoreData.builder()
             .language(language)
             .source(source)
             .channel(channel)
@@ -439,17 +446,18 @@ public class TestEqLaunchService_payloadCreation {
     // Run code under to test to get the payload map.
     Map<String, Object> payloadMapFromComplexCall =
         eqLaunchService.createPayloadMap(
-            launchData, caseData, agentId, null, null, accountServiceLogoutUrl);
+            coreLaunchData, caseData, agentId, null, null, accountServiceLogoutUrl);
 
     assertEquals(
         "expectedMap should equal the cleaned map from the complex call",
         expectedMap,
         cleanPayloadMap(payloadMapFromComplexCall));
 
+    EqLaunchData launchData =
+        build(coreLaunchData, caseData, agentId, null, accountServiceLogoutUrl);
+
     // Run code under test to get encrypted payload string
-    String payloadStringFromSimpleCall =
-        eqLaunchService.getEqLaunchJwe(
-            launchData, caseData, agentId, null, accountServiceLogoutUrl);
+    String payloadStringFromSimpleCall = eqLaunchService.getEqLaunchJwe(launchData);
 
     // decrypt it
     String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
@@ -472,5 +480,26 @@ public class TestEqLaunchService_payloadCreation {
     payloadMap.put("iat", "12345");
     payloadMap.put("exp", "12345");
     return payloadMap;
+  }
+
+  private EqLaunchData build(
+      EqLaunchCoreData coreData,
+      CaseContainerDTO caseContainer,
+      String userId,
+      String accountServiceUrl,
+      String accountServiceLogoutUrl) {
+    return EqLaunchData.builder()
+        .language(coreData.getLanguage())
+        .source(coreData.getSource())
+        .channel(coreData.getChannel())
+        .questionnaireId(coreData.getQuestionnaireId())
+        .formType(coreData.getFormType())
+        .keyStore(coreData.getKeyStore())
+        .salt(coreData.getSalt())
+        .caseContainer(caseContainer)
+        .userId(userId)
+        .accountServiceUrl(accountServiceUrl)
+        .accountServiceLogoutUrl(accountServiceLogoutUrl)
+        .build();
   }
 }

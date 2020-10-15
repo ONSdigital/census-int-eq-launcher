@@ -68,7 +68,7 @@ public class KeyStore {
    * Get key by Id
    *
    * @param kid key Id
-   * @return
+   * @return optional key
    */
   public Optional<Key> getKeyById(String kid) {
     if (keys.getKeys().containsKey(kid)) {
