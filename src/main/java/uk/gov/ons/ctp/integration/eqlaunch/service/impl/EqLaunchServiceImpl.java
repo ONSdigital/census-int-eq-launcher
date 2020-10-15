@@ -13,78 +13,45 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.bouncycastle.util.encoders.Hex;
-import uk.gov.ons.ctp.common.domain.Channel;
-import uk.gov.ons.ctp.common.domain.Language;
 import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.Codec;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
+import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchCoreData;
+import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchService;
 
 public class EqLaunchServiceImpl implements EqLaunchService {
 
   private static final Logger log = LoggerFactory.getLogger(EqLaunchServiceImpl.class);
   private static final String ROLE_FLUSHER = "flusher";
+  private static final String CCS = "CCS";
   private Codec codec = new Codec();
 
-  public String getEqLaunchJwe(
-      Language language,
-      Source source,
-      Channel channel,
-      CaseContainerDTO caseContainer,
-      String userId,
-      String questionnaireId,
-      String formType,
-      String accountServiceUrl,
-      String accountServiceLogoutUrl,
-      KeyStore keyStore,
-      String salt)
-      throws CTPException {
+  @Override
+  public String getEqLaunchJwe(EqLaunchData launchData) throws CTPException {
+    EqLaunchCoreData coreLaunchData = launchData.coreCopy();
 
     Map<String, Object> payload =
         createPayloadMap(
-            language,
-            source,
-            channel,
-            caseContainer,
-            userId,
+            coreLaunchData,
+            launchData.getCaseContainer(),
+            launchData.getUserId(),
             null,
-            questionnaireId,
-            formType,
-            accountServiceUrl,
-            accountServiceLogoutUrl,
-            salt);
+            launchData.getAccountServiceUrl(),
+            launchData.getAccountServiceLogoutUrl());
 
-    return codec.encrypt(payload, "authentication", keyStore);
+    return codec.encrypt(payload, "authentication", launchData.getKeyStore());
   }
 
-  public String getEqFlushLaunchJwe(
-      Language language,
-      Source source,
-      Channel channel,
-      String questionnaireId,
-      String formType,
-      KeyStore keyStore,
-      String salt)
-      throws CTPException {
+  @Override
+  public String getEqFlushLaunchJwe(EqLaunchCoreData launchData) throws CTPException {
 
     Map<String, Object> payload =
-        createPayloadMap(
-            language,
-            source,
-            channel,
-            null,
-            null,
-            ROLE_FLUSHER,
-            questionnaireId,
-            formType,
-            null,
-            null,
-            salt);
+        createPayloadMap(launchData, null, null, ROLE_FLUSHER, null, null);
 
-    return codec.encrypt(payload, "authentication", keyStore);
+    return codec.encrypt(payload, "authentication", launchData.getKeyStore());
   }
 
   /**
@@ -97,30 +64,27 @@ public class EqLaunchServiceImpl implements EqLaunchService {
    * <p>This code assumes that the channel is CC or field, and will need the user_id field to be
    * cleared if it is ever used from RH.
    *
-   * @param language
-   * @param channel
-   * @param caseContainer
-   * @param userId
-   * @param role
-   * @param questionnaireId
-   * @param accountServiceUrl
-   * @param accountServiceLogoutUrl
+   * @param coreData core launch data
+   * @param caseContainer case container
+   * @param userId user id
+   * @param role role
+   * @param questionnaireId questionnaire ID
+   * @param accountServiceUrl service url
+   * @param accountServiceLogoutUrl logout url
    * @return
-   * @throws CTPException
+   * @throws CTPException on error
    */
   Map<String, Object> createPayloadMap(
-      Language language,
-      Source source,
-      Channel channel,
+      EqLaunchCoreData coreData,
       CaseContainerDTO caseContainer,
       String userId,
       String role,
-      String questionnaireId,
-      String formType,
       String accountServiceUrl,
-      String accountServiceLogoutUrl,
-      String salt)
+      String accountServiceLogoutUrl)
       throws CTPException {
+
+    String questionnaireId = coreData.getQuestionnaireId();
+    Source source = coreData.getSource();
 
     long currentTimeInSeconds = System.currentTimeMillis() / 1000;
 
@@ -156,19 +120,19 @@ public class EqLaunchServiceImpl implements EqLaunchService {
                   caseContainer.getPostcode()));
       payload.computeIfAbsent("survey", (k) -> caseContainer.getSurveyType());
     }
-    String responseId = encryptResponseId(questionnaireId, salt);
-    payload.computeIfAbsent("language_code", (k) -> language.getIsoLikeCode());
+    String responseId = encryptResponseId(questionnaireId, coreData.getSalt());
+    payload.computeIfAbsent("language_code", (k) -> coreData.getLanguage().getIsoLikeCode());
     payload.computeIfAbsent("response_id", (k) -> responseId);
     payload.computeIfAbsent("account_service_url", (k) -> accountServiceUrl);
     payload.computeIfAbsent("account_service_log_out_url", (k) -> accountServiceLogoutUrl);
-    payload.computeIfAbsent("channel", (k) -> channel.name().toLowerCase());
+    payload.computeIfAbsent("channel", (k) -> coreData.getChannel().name().toLowerCase());
     payload.computeIfAbsent("user_id", (k) -> userId);
     payload.computeIfAbsent("roles", (k) -> role);
     payload.computeIfAbsent("questionnaire_id", (k) -> questionnaireId);
 
     payload.computeIfAbsent("eq_id", (k) -> "census"); // hardcoded for rehearsal
     payload.computeIfAbsent("period_id", (k) -> "2019"); // hardcoded for rehearsal
-    payload.computeIfAbsent("form_type", (k) -> formType);
+    payload.computeIfAbsent("form_type", (k) -> coreData.getFormType());
 
     log.with("payload", payload).debug("Payload for EQ");
 
@@ -183,7 +147,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     verifyNotNull(caseContainer.getCaseType(), "case type", caseId);
     verifyNotNull(caseContainer.getCollectionExerciseId(), "collection id", caseId);
     verifyNotNull(questionnaireId, "questionnaireId", caseId);
-    if (source != FIELD_SERVICE) {
+    if (source != FIELD_SERVICE && !CCS.equalsIgnoreCase(caseContainer.getSurveyType())) {
       verifyNotNull(caseContainer.getUprn(), "address uprn", caseId);
     }
     verifyNotNull(caseContainer.getSurveyType(), "survey type", caseId);
@@ -234,7 +198,6 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       byte[] bytes = md.digest(questionnaireId.getBytes());
       responseId.append((new String(Hex.encode(bytes)).substring(0, 16)));
     } catch (NoSuchAlgorithmException ex) {
-      log.with(questionnaireId);
       log.with(questionnaireId).error("No SHA-256 algorithm while encrypting questionnaire", ex);
       throw new CTPException(Fault.SYSTEM_ERROR, ex);
     }

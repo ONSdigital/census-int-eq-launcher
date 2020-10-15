@@ -23,6 +23,7 @@ public class KeyStore {
    * @param cryptoKeys JSON String of cryptographic keys.
    * @throws CTPException if failure to read keys.
    */
+  @SuppressWarnings("deprecation")
   public KeyStore(String cryptoKeys) throws CTPException {
 
     ObjectMapper mapper = new ObjectMapper();
@@ -67,7 +68,7 @@ public class KeyStore {
    * Get key by Id
    *
    * @param kid key Id
-   * @return
+   * @return optional key
    */
   public Optional<Key> getKeyById(String kid) {
     if (keys.getKeys().containsKey(kid)) {

@@ -26,8 +26,8 @@ public class JWEHelper {
    *
    * @param jws payload
    * @param key cryptographic key to use for encryption
-   * @return
-   * @throws CTPException
+   * @return encrypted result
+   * @throws CTPException on error
    */
   public String encrypt(JWSObject jws, Key key) throws CTPException {
     log.with(key.getKid()).debug("Encrypting with public key");
@@ -46,6 +46,7 @@ public class JWEHelper {
     }
   }
 
+  @SuppressWarnings("deprecation")
   private JWEHeader buildHeader(Key key) {
 
     // We HAVE to use the deprecated Algo to remain compatible with EQ
@@ -85,7 +86,7 @@ public class JWEHelper {
    * @param jwe JWE encrypted String
    * @param key Cryptographic key to decrypt JWE
    * @return JWSObject representing payload
-   * @throws CTPException
+   * @throws CTPException on error
    */
   public JWSObject decrypt(String jwe, Key key) throws CTPException {
 
