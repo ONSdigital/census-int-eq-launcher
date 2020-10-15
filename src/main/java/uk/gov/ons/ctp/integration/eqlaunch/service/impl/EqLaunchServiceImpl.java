@@ -24,6 +24,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
 
   private static final Logger log = LoggerFactory.getLogger(EqLaunchServiceImpl.class);
   private static final String ROLE_FLUSHER = "flusher";
+  private static final String CCS = "CCS";
   private Codec codec = new Codec();
 
   public String getEqLaunchJwe(
@@ -175,7 +176,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     verifyNotNull(caseContainer.getCaseType(), "case type", caseId);
     verifyNotNull(caseContainer.getCollectionExerciseId(), "collection id", caseId);
     verifyNotNull(questionnaireId, "questionnaireId", caseId);
-    if (source != FIELD_SERVICE) {
+    if (source != FIELD_SERVICE && !CCS.equalsIgnoreCase(caseContainer.getSurveyType())) {
       verifyNotNull(caseContainer.getUprn(), "address uprn", caseId);
     }
     verifyNotNull(caseContainer.getSurveyType(), "survey type", caseId);
