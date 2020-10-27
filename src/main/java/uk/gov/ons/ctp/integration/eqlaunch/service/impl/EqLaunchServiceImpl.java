@@ -68,7 +68,6 @@ public class EqLaunchServiceImpl implements EqLaunchService {
    * @param caseContainer case container
    * @param userId user id
    * @param role role
-   * @param questionnaireId questionnaire ID
    * @param accountServiceUrl service url
    * @param accountServiceLogoutUrl logout url
    * @return
@@ -107,7 +106,11 @@ public class EqLaunchServiceImpl implements EqLaunchService {
       String convertedRegionCode = convertRegionCode(caseContainer.getRegion());
       payload.computeIfAbsent("region_code", (k) -> convertedRegionCode);
       payload.computeIfAbsent(
-          "ru_ref", (k) -> source == FIELD_SERVICE ? caseIdStr : caseContainer.getUprn());
+          "ru_ref",
+          (k) ->
+              caseContainer.getSurveyType().equalsIgnoreCase("CCS")
+                  ? caseIdStr
+                  : caseContainer.getUprn());
       payload.computeIfAbsent("case_id", (k) -> caseIdStr);
       payload.computeIfAbsent(
           "display_address",
