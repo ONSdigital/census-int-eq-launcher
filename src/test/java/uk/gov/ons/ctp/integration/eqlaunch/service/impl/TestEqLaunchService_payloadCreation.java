@@ -464,7 +464,6 @@ public class TestEqLaunchService_payloadCreation {
 
     // create expectation
     Map<String, Object> expectedMap = getExpectedMap(caseData);
-    //    expectedMap.remove("ru_ref");
 
     // create params for code under test
     Language language = Language.ENGLISH;
