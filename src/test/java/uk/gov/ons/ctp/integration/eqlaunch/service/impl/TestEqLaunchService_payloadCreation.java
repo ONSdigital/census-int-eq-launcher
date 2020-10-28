@@ -230,7 +230,7 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("case_type", "H");
     expectedMap.put("collection_exercise_sid", collectionExerciseId.toString());
     expectedMap.put("region_code", "GB-ENG");
-    expectedMap.put("ru_ref", caseId.toString());
+    expectedMap.put("ru_ref", uprn);
     expectedMap.put("case_id", caseId.toString());
     expectedMap.put("language_code", "en");
     expectedMap.put("display_address", "ONS, Segensworth\'s Road");
@@ -464,13 +464,11 @@ public class TestEqLaunchService_payloadCreation {
 
     // create expectation
     Map<String, Object> expectedMap = getExpectedMap(caseData);
-    expectedMap.remove("ru_ref");
 
     // create params for code under test
     Language language = Language.ENGLISH;
     Source source = Source.CONTACT_CENTRE_API;
     Channel channel = Channel.CC;
-    String questionnaireId = A_QUESTIONNAIRE_ID;
     String formType = "H";
     String agentId = "123456";
     String accountServiceLogoutUrl = "https://localhost/questionnaireSaved";
@@ -481,7 +479,7 @@ public class TestEqLaunchService_payloadCreation {
             .language(language)
             .source(source)
             .channel(channel)
-            .questionnaireId(questionnaireId)
+            .questionnaireId(A_QUESTIONNAIRE_ID)
             .formType(formType)
             .keyStore(keyStoreEncryption)
             .salt(SALT)
@@ -543,7 +541,11 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("case_type", caseData.getCaseType());
     expectedMap.put("collection_exercise_sid", caseData.getCollectionExerciseId().toString());
     expectedMap.put("region_code", "GB-ENG");
-    expectedMap.put("ru_ref", caseData.getUprn());
+    expectedMap.put(
+        "ru_ref",
+        caseData.getSurveyType().equalsIgnoreCase("CCS")
+            ? caseData.getId().toString()
+            : caseData.getUprn());
     expectedMap.put("case_id", caseData.getId().toString());
     expectedMap.put(
         "display_address", caseData.getAddressLine1() + ", " + caseData.getAddressLine2());
