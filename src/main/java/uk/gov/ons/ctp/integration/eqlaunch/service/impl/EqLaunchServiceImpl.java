@@ -133,8 +133,8 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     payload.computeIfAbsent("roles", (k) -> role);
     payload.computeIfAbsent("questionnaire_id", (k) -> questionnaireId);
 
-    payload.computeIfAbsent("eq_id", (k) -> "census"); // hardcoded for rehearsal
-    payload.computeIfAbsent("period_id", (k) -> "2019"); // hardcoded for rehearsal
+    payload.computeIfAbsent("eq_id", (k) -> "census");
+    payload.computeIfAbsent("period_id", (k) -> "2021");
     payload.computeIfAbsent("form_type", (k) -> coreData.getFormType());
 
     log.with("payload", payload).debug("Payload for EQ");
