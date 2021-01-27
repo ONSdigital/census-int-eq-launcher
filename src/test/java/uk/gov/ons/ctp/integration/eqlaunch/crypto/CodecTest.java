@@ -254,7 +254,7 @@ public class CodecTest {
     test.put("user_id", "");
     test.put("questionnaire_id", "11100000009");
     test.put("eq_id", "census");
-    test.put("period_id", "2019");
+    test.put("period_id", "2021");
     test.put("form_type", "H");
     test.put("survey", "CENSUS");
 

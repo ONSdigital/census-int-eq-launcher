@@ -241,7 +241,7 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("user_id", "1234567890");
     expectedMap.put("questionnaire_id", A_QUESTIONNAIRE_ID);
     expectedMap.put("eq_id", "census");
-    expectedMap.put("period_id", "2019");
+    expectedMap.put("period_id", "2021");
     expectedMap.put("form_type", "H");
     expectedMap.put("survey", "CENSUS");
 
@@ -343,7 +343,7 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("roles", "flusher");
     expectedMap.put("questionnaire_id", A_QUESTIONNAIRE_ID);
     expectedMap.put("eq_id", "census");
-    expectedMap.put("period_id", "2019");
+    expectedMap.put("period_id", "2021");
     expectedMap.put("form_type", "H");
 
     // create params for code under test
@@ -536,7 +536,7 @@ public class TestEqLaunchService_payloadCreation {
     expectedMap.put("channel", "cc");
     expectedMap.put("questionnaire_id", A_QUESTIONNAIRE_ID);
     expectedMap.put("eq_id", "census");
-    expectedMap.put("period_id", "2019");
+    expectedMap.put("period_id", "2021");
     expectedMap.put("form_type", "H");
     expectedMap.put("case_type", caseData.getCaseType());
     expectedMap.put("collection_exercise_sid", caseData.getCollectionExerciseId().toString());
