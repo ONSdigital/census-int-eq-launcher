@@ -44,7 +44,6 @@ public abstract class JWSHelper {
   public static class EncodeJws extends JWSHelper {
     private Key key;
     private JWSHeader jwsHeader;
-    private RSAKey jwk;
     private RSASSASigner signer;
 
     /**
@@ -56,7 +55,7 @@ public abstract class JWSHelper {
     public EncodeJws(Key key) throws CTPException {
       this.key = key;
       this.jwsHeader = buildHeader(key);
-      this.jwk = (RSAKey) key.getJWK();
+      RSAKey jwk = (RSAKey) key.getJWK();
 
       try {
         this.signer = new RSASSASigner(jwk);
@@ -83,9 +82,8 @@ public abstract class JWSHelper {
         jwsObject.sign(this.signer);
         return jwsObject;
       } catch (JOSEException e) {
-        log.with("kid", key.getKid()).error("Failed to create private JWSSigner to sign claims");
-        throw new CTPException(
-            CTPException.Fault.SYSTEM_ERROR, "Failed to create private JWSSigner to sign claims");
+        log.with("kid", key.getKid()).error("Failed to sign claims");
+        throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Failed to sign claims");
       }
     }
 

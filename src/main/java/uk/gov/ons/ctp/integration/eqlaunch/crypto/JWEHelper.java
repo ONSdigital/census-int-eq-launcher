@@ -24,7 +24,6 @@ public abstract class JWEHelper {
   public static class EncryptJwe extends JWEHelper {
     private Key key;
     private JWEHeader jweHeader;
-    private RSAKey jwk;
     private RSAEncrypter encryptor;
 
     /**
@@ -36,7 +35,7 @@ public abstract class JWEHelper {
     public EncryptJwe(Key key) throws CTPException {
       this.key = key;
       this.jweHeader = buildHeader(key);
-      this.jwk = (RSAKey) key.getJWK();
+      RSAKey jwk = (RSAKey) key.getJWK();
 
       try {
         encryptor = new RSAEncrypter(jwk);
