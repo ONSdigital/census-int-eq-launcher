@@ -21,7 +21,13 @@ public class JweDecryptor {
     this.keyStore = keyStore;
   }
 
-  /** Implementation to extract the JWS payload of a JWE, verify the JWS and return it's payload. */
+  /**
+   * Implementation to extract the JWS payload of a JWE, verify the JWS and return it's payload.
+   *
+   * @param jwe encrypted value
+   * @return decrypted value
+   * @throws CTPException on error.
+   */
   public String decrypt(String jwe) throws CTPException {
 
     Optional<Key> publicKey = keyStore.getKeyById(jweHelper.getKid(jwe));

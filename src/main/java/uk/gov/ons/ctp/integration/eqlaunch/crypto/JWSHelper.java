@@ -51,6 +51,7 @@ public abstract class JWSHelper {
      * Constructor.
      *
      * @param key key with which to sign claims.
+     * @throws CTPException on error.
      */
     public EncodeJws(Key key) throws CTPException {
       this.key = key;

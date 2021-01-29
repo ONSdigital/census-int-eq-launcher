@@ -61,6 +61,10 @@ public class JweEncryptor {
 
   /**
    * Implementation to produce signed JWS for a set of claims and encrypt as the payload of a JWE.
+   *
+   * @param claims set of claims
+   * @return encrypted value
+   * @throws CTPException on error
    */
   public String encrypt(Map<String, Object> claims) throws CTPException {
     JWSObject jws = jwsEncoder.encode(claims);
