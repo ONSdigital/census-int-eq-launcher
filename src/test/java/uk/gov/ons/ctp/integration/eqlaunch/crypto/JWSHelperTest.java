@@ -11,11 +11,9 @@ import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
-import java.util.HashMap;
 import org.junit.Test;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWSHelper.JwsDecoder;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWSHelper.JwsEncoder;
+import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWSHelper.DecodeJws;
 
 public class JWSHelperTest {
 
@@ -88,17 +86,14 @@ public class JWSHelperTest {
           + "AuSIJ3MHTJ3yPMNg1yeSkau2vXPQgcrApjCuLK5Uo/mhM1bJjKOxB7FisXEC\n"
           + "-----END RSA PRIVATE KEY-----";
 
-  private JwsEncoder jwsEncoder = JWSHelper.createForEncode();
-  private JwsDecoder jwsDecoder = JWSHelper.createForDecode();
+  private DecodeJws jwsDecoder = new DecodeJws();
 
   @Test
   public void testEncodeBadKey() throws Exception {
     Key key = new Key();
     // Need a private key to sign JWS
     key.setValue(SIGNING_PUBLIC_VALUE);
-    CTPException e =
-        assertThrows(
-            CTPException.class, () -> jwsEncoder.encode(new HashMap<String, Object>(), key));
+    CTPException e = assertThrows(CTPException.class, () -> new JWSHelper.EncodeJws(key));
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
@@ -108,7 +103,7 @@ public class JWSHelperTest {
         new JWSHeader.Builder(JWSAlgorithm.RS256).type(JOSEObjectType.JWT).build();
     JWSObject jwsObject = new JWSObject(jwsHeader, new Payload(""));
 
-    CTPException e = assertThrows(CTPException.class, () -> jwsEncoder.getKid(jwsObject));
+    CTPException e = assertThrows(CTPException.class, () -> jwsDecoder.getKid(jwsObject));
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
@@ -119,7 +114,7 @@ public class JWSHelperTest {
 
     JWSObject jwsObject = new JWSObject(jwsHeader, new Payload(""));
 
-    CTPException e = assertThrows(CTPException.class, () -> jwsEncoder.getKid(jwsObject));
+    CTPException e = assertThrows(CTPException.class, () -> jwsDecoder.getKid(jwsObject));
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 

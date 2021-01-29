@@ -11,7 +11,7 @@ import org.junit.Test;
 import uk.gov.ons.ctp.common.error.CTPException;
 
 /** Unit tests of the encryption and decryption of a payload */
-public class JweEncyptorTest {
+public class JweEncryptorTest {
 
   private static final String SIGNING_PUBLIC_SHA1 = "f008897e548d5c4fb9271e5a85f6fc4759301f26";
 

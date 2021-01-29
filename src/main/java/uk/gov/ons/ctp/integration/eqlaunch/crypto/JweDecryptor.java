@@ -5,15 +5,16 @@ import com.godaddy.logging.LoggerFactory;
 import com.nimbusds.jose.JWSObject;
 import java.util.Optional;
 import uk.gov.ons.ctp.common.error.CTPException;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWSHelper.JwsDecoder;
+import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWEHelper.DecryptJwe;
+import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWSHelper.DecodeJws;
 
 /** Decrypt a launch token. */
 public class JweDecryptor {
 
   private static final Logger log = LoggerFactory.getLogger(JweDecryptor.class);
 
-  private JwsDecoder jwsHelper = JWSHelper.createForDecode();
-  private JWEHelper jweHelper = new JWEHelper();
+  private DecodeJws jwsHelper = new DecodeJws();
+  private DecryptJwe jweHelper = new DecryptJwe();
   private KeyStore keyStore;
 
   public JweDecryptor(KeyStore keyStore) {
