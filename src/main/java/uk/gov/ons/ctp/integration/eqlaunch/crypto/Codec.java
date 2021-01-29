@@ -20,12 +20,16 @@ public class Codec implements EQJOSEProvider {
 
   private JWSHelper jwsHelper = new JWSHelper();
   private JWEHelper jweHelper = new JWEHelper();
+  private KeyStore keyStore;
+
+  public Codec(KeyStore keyStore) {
+    this.keyStore = keyStore;
+  }
 
   /**
    * Implementation to produce signed JWS for a set of claims and encrypt as the payload of a JWE.
    */
-  public String encrypt(Map<String, Object> claims, String keyPurpose, KeyStore keyStore)
-      throws CTPException {
+  public String encrypt(Map<String, Object> claims, String keyPurpose) throws CTPException {
 
     Optional<Key> privateKey = keyStore.getKeyForPurposeAndType(keyPurpose, KEYTYPE_PRIVATE);
     JWSObject jws;
@@ -52,7 +56,7 @@ public class Codec implements EQJOSEProvider {
   }
 
   /** Implementation to extract the JWS payload of a JWE, verify the JWS and return it's payload. */
-  public String decrypt(String jwe, KeyStore keyStore) throws CTPException {
+  public String decrypt(String jwe) throws CTPException {
 
     Optional<Key> publicKey = keyStore.getKeyById(jweHelper.getKid(jwe));
     JWSObject jws;
