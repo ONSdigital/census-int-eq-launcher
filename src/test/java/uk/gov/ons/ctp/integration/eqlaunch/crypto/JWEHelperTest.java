@@ -18,6 +18,8 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import org.junit.Test;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWEHelper.DecryptJwe;
+import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWEHelper.EncryptJwe;
 
 public class JWEHelperTest {
 
@@ -37,7 +39,7 @@ public class JWEHelperTest {
           + "mZrnkh13fkWKTPVDjY/n+3ECAwEAAQ==\n"
           + "-----END PUBLIC KEY-----";
 
-  private JWEHelper jweHelper = new JWEHelper();
+  private DecryptJwe jweDecryptor = new DecryptJwe();
 
   @Test
   public void testEncryptBadKey() throws Exception {
@@ -54,7 +56,7 @@ public class JWEHelperTest {
     Key key = new Key();
     key.setValue("");
 
-    CTPException e = assertThrows(CTPException.class, () -> jweHelper.encrypt(jwsObject, key));
+    CTPException e = assertThrows(CTPException.class, () -> new EncryptJwe(key));
 
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
@@ -70,7 +72,7 @@ public class JWEHelperTest {
     jweObject.encrypt(new RSAEncrypter(rsaJWK));
 
     CTPException e =
-        assertThrows(CTPException.class, () -> jweHelper.getKid(jweObject.serialize()));
+        assertThrows(CTPException.class, () -> jweDecryptor.getKid(jweObject.serialize()));
 
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
@@ -88,7 +90,7 @@ public class JWEHelperTest {
     jweObject.encrypt(new RSAEncrypter(rsaJWK));
 
     CTPException e =
-        assertThrows(CTPException.class, () -> jweHelper.getKid(jweObject.serialize()));
+        assertThrows(CTPException.class, () -> jweDecryptor.getKid(jweObject.serialize()));
 
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
@@ -96,7 +98,7 @@ public class JWEHelperTest {
   @Test
   public void testDecryptUnparseable() throws Exception {
     Key key = new Key();
-    CTPException e = assertThrows(CTPException.class, () -> jweHelper.decrypt("", key));
+    CTPException e = assertThrows(CTPException.class, () -> jweDecryptor.decrypt("", key));
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
@@ -123,7 +125,7 @@ public class JWEHelperTest {
     key.setValue(SPURIOUS_RSA_PUBLIC_VALUE);
     key.setKid("123");
     CTPException e =
-        assertThrows(CTPException.class, () -> jweHelper.decrypt(jweObject.serialize(), key));
+        assertThrows(CTPException.class, () -> jweDecryptor.decrypt(jweObject.serialize(), key));
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 }

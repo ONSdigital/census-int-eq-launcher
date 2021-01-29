@@ -13,8 +13,7 @@ import uk.gov.ons.ctp.common.domain.Channel;
 import uk.gov.ons.ctp.common.domain.Language;
 import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.Codec;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.EQJOSEProvider;
+import uk.gov.ons.ctp.integration.eqlaunch.crypto.JweDecryptor;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchCoreData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
@@ -211,11 +210,11 @@ public class TestEqLaunchService_payloadCreation {
    */
   @Test
   public void createFieldServicePayload() throws Exception {
-    EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl();
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
-    KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION);
+    EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl(keyStoreEncryption);
 
-    EQJOSEProvider codec = new Codec();
+    KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION);
+    JweDecryptor decryptor = new JweDecryptor(keyStoreDecryption);
 
     // create expectation
     UUID collectionExerciseId = UUID.randomUUID();
@@ -275,7 +274,6 @@ public class TestEqLaunchService_payloadCreation {
             .channel(channel)
             .questionnaireId(questionnaireId)
             .formType(formType)
-            .keyStore(keyStoreEncryption)
             .salt(SALT)
             .build();
 
@@ -301,7 +299,7 @@ public class TestEqLaunchService_payloadCreation {
     String payloadStringFromSimpleCall = eqLaunchService.getEqLaunchJwe(launchData);
 
     // decrypt it
-    String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
+    String decrypted = decryptor.decrypt(payloadStringFromSimpleCall);
 
     // turn it back into a map
     ObjectMapper mapper = new ObjectMapper();
@@ -326,10 +324,11 @@ public class TestEqLaunchService_payloadCreation {
    */
   @Test
   public void createFlusherPayload() throws Exception {
-    EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl();
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
+    EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl(keyStoreEncryption);
+
     KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION);
-    EQJOSEProvider codec = new Codec();
+    JweDecryptor decryptor = new JweDecryptor(keyStoreDecryption);
 
     // create expectation
     Map<String, Object> expectedMap = new HashMap<>();
@@ -360,7 +359,6 @@ public class TestEqLaunchService_payloadCreation {
             .channel(channel)
             .questionnaireId(questionnaireId)
             .formType(formType)
-            .keyStore(keyStoreEncryption)
             .salt(SALT)
             .build();
 
@@ -377,7 +375,7 @@ public class TestEqLaunchService_payloadCreation {
     String payloadStringFromSimpleCall = eqLaunchService.getEqFlushLaunchJwe(launchData);
 
     // decrypt it
-    String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
+    String decrypted = decryptor.decrypt(payloadStringFromSimpleCall);
 
     // turn it back into a map
     ObjectMapper mapper = new ObjectMapper();
@@ -393,10 +391,11 @@ public class TestEqLaunchService_payloadCreation {
 
   @Test
   public void createEqLaunchPayload() throws Exception {
-    EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl();
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
+    EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl(keyStoreEncryption);
+
     KeyStore keyStoreDecryption = new KeyStore(JWTKEYS_DECRYPTION);
-    EQJOSEProvider codec = new Codec();
+    JweDecryptor decryptor = new JweDecryptor(keyStoreDecryption);
 
     // Load case
     CaseContainerDTO caseData = FixtureHelper.loadClassFixtures(CaseContainerDTO[].class).get(0);
@@ -420,7 +419,6 @@ public class TestEqLaunchService_payloadCreation {
             .channel(channel)
             .questionnaireId(questionnaireId)
             .formType(formType)
-            .keyStore(keyStoreEncryption)
             .salt(SALT)
             .build();
 
@@ -441,7 +439,7 @@ public class TestEqLaunchService_payloadCreation {
     String payloadStringFromSimpleCall = eqLaunchService.getEqLaunchJwe(launchData);
 
     // decrypt it
-    String decrypted = codec.decrypt(payloadStringFromSimpleCall, keyStoreDecryption);
+    String decrypted = decryptor.decrypt(payloadStringFromSimpleCall);
 
     // turn it back into a map
     ObjectMapper mapper = new ObjectMapper();
@@ -457,7 +455,8 @@ public class TestEqLaunchService_payloadCreation {
 
   @Test
   public void createEqLaunchPayloadForSurveyTypeCCS() throws Exception {
-    EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl();
+    KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
+    EqLaunchServiceImpl eqLaunchService = new EqLaunchServiceImpl(keyStoreEncryption);
 
     // Load case
     CaseContainerDTO caseData = FixtureHelper.loadClassFixtures(CaseContainerDTO[].class).get(1);
@@ -472,7 +471,6 @@ public class TestEqLaunchService_payloadCreation {
     String formType = "H";
     String agentId = "123456";
     String accountServiceLogoutUrl = "https://localhost/questionnaireSaved";
-    KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION);
 
     EqLaunchCoreData coreLaunchData =
         EqLaunchCoreData.builder()
@@ -481,7 +479,6 @@ public class TestEqLaunchService_payloadCreation {
             .channel(channel)
             .questionnaireId(A_QUESTIONNAIRE_ID)
             .formType(formType)
-            .keyStore(keyStoreEncryption)
             .salt(SALT)
             .build();
 
@@ -516,7 +513,6 @@ public class TestEqLaunchService_payloadCreation {
         .channel(coreData.getChannel())
         .questionnaireId(coreData.getQuestionnaireId())
         .formType(coreData.getFormType())
-        .keyStore(coreData.getKeyStore())
         .salt(coreData.getSalt())
         .caseContainer(caseContainer)
         .userId(userId)
