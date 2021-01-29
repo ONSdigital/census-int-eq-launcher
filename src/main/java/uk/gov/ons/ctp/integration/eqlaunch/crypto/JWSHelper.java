@@ -24,33 +24,17 @@ public class JWSHelper {
 
   private static final Logger log = LoggerFactory.getLogger(JWSHelper.class);
 
-  /**
-   * Return JWSObject with provided claims using key provided
-   *
-   * @param claims to be signed
-   * @param key with which to sign claims
-   * @return JWSObject representing JWS token
-   * @throws CTPException on error
-   */
-  public JWSObject encode(Map<String, Object> claims, Key key) throws CTPException {
-
-    log.with(key.getKid()).debug("Encoding with public key");
-    JWSHeader jwsHeader = buildHeader(key);
-    Payload jwsClaims = buildClaims(claims);
-    JWSObject jwsObject = new JWSObject(jwsHeader, jwsClaims);
-
-    RSAKey jwk = (RSAKey) key.getJWK();
-    try {
-      jwsObject.sign(new RSASSASigner(jwk));
-      return jwsObject;
-    } catch (JOSEException e) {
-      log.with("kid", key.getKid()).error("Failed to create private JWSSigner to sign claims");
-      throw new CTPException(
-          CTPException.Fault.SYSTEM_ERROR, "Failed to create private JWSSigner to sign claims");
-    }
+  static JwsDecoder createForDecode() {
+    return new JwsDecoder();
   }
 
-  private JWSHeader buildHeader(Key key) {
+  static JwsEncoder createForEncode() {
+    return new JwsEncoder();
+  }
+
+  private JWSHelper() {}
+
+  JWSHeader buildHeader(Key key) {
 
     JWSHeader jwsHeader =
         new JWSHeader.Builder(JWSAlgorithm.RS256)
@@ -60,7 +44,7 @@ public class JWSHelper {
     return jwsHeader;
   }
 
-  private Payload buildClaims(Map<String, Object> claims) {
+  Payload buildClaims(Map<String, Object> claims) {
     JSONObject jsonObject = new JSONObject(claims);
     Payload jwsClaims = new Payload(jsonObject);
     return jwsClaims;
@@ -82,30 +66,60 @@ public class JWSHelper {
     return keyId;
   }
 
-  /**
-   * Check the signature of this JWS object against the provided Key.
-   *
-   * @param jwsObject JWS object
-   * @param key key
-   * @return JWS claims
-   * @throws CTPException on error
-   */
-  public String decode(JWSObject jwsObject, Key key) throws CTPException {
-    try {
-      if (jwsObject.verify(new RSASSAVerifier((RSAKey) key.getJWK()))) {
-        Payload payload = jwsObject.getPayload();
-        if (payload == null) {
-          log.error("Extracted JWS Payload null");
-          throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Extracted JWS Payload null");
+  public static class JwsEncoder extends JWSHelper {
+    /**
+     * Return JWSObject with provided claims using key provided
+     *
+     * @param claims to be signed
+     * @param key with which to sign claims
+     * @return JWSObject representing JWS token
+     * @throws CTPException on error
+     */
+    public JWSObject encode(Map<String, Object> claims, Key key) throws CTPException {
+
+      log.with(key.getKid()).debug("Encoding with public key");
+      JWSHeader jwsHeader = buildHeader(key);
+      Payload jwsClaims = buildClaims(claims);
+      JWSObject jwsObject = new JWSObject(jwsHeader, jwsClaims);
+
+      RSAKey jwk = (RSAKey) key.getJWK();
+      try {
+        jwsObject.sign(new RSASSASigner(jwk));
+        return jwsObject;
+      } catch (JOSEException e) {
+        log.with("kid", key.getKid()).error("Failed to create private JWSSigner to sign claims");
+        throw new CTPException(
+            CTPException.Fault.SYSTEM_ERROR, "Failed to create private JWSSigner to sign claims");
+      }
+    }
+  }
+
+  public static class JwsDecoder extends JWSHelper {
+    /**
+     * Check the signature of this JWS object against the provided Key.
+     *
+     * @param jwsObject JWS object
+     * @param key key
+     * @return JWS claims
+     * @throws CTPException on error
+     */
+    public String decode(JWSObject jwsObject, Key key) throws CTPException {
+      try {
+        if (jwsObject.verify(new RSASSAVerifier((RSAKey) key.getJWK()))) {
+          Payload payload = jwsObject.getPayload();
+          if (payload == null) {
+            log.error("Extracted JWS Payload null");
+            throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Extracted JWS Payload null");
+          }
+          return payload.toString();
+        } else {
+          log.with("kid", key.getKid()).error("Failed to verify JWS signature");
+          throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Failed to verify JWS signature");
         }
-        return payload.toString();
-      } else {
+      } catch (JOSEException e) {
         log.with("kid", key.getKid()).error("Failed to verify JWS signature");
         throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Failed to verify JWS signature");
       }
-    } catch (JOSEException e) {
-      log.with("kid", key.getKid()).error("Failed to verify JWS signature");
-      throw new CTPException(CTPException.Fault.SYSTEM_ERROR, "Failed to verify JWS signature");
     }
   }
 }

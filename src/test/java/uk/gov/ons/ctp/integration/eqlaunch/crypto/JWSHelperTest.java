@@ -14,6 +14,8 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import java.util.HashMap;
 import org.junit.Test;
 import uk.gov.ons.ctp.common.error.CTPException;
+import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWSHelper.JwsDecoder;
+import uk.gov.ons.ctp.integration.eqlaunch.crypto.JWSHelper.JwsEncoder;
 
 public class JWSHelperTest {
 
@@ -86,7 +88,8 @@ public class JWSHelperTest {
           + "AuSIJ3MHTJ3yPMNg1yeSkau2vXPQgcrApjCuLK5Uo/mhM1bJjKOxB7FisXEC\n"
           + "-----END RSA PRIVATE KEY-----";
 
-  private JWSHelper jwsHelper = new JWSHelper();
+  private JwsEncoder jwsEncoder = JWSHelper.createForEncode();
+  private JwsDecoder jwsDecoder = JWSHelper.createForDecode();
 
   @Test
   public void testEncodeBadKey() throws Exception {
@@ -95,7 +98,7 @@ public class JWSHelperTest {
     key.setValue(SIGNING_PUBLIC_VALUE);
     CTPException e =
         assertThrows(
-            CTPException.class, () -> jwsHelper.encode(new HashMap<String, Object>(), key));
+            CTPException.class, () -> jwsEncoder.encode(new HashMap<String, Object>(), key));
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
@@ -105,7 +108,7 @@ public class JWSHelperTest {
         new JWSHeader.Builder(JWSAlgorithm.RS256).type(JOSEObjectType.JWT).build();
     JWSObject jwsObject = new JWSObject(jwsHeader, new Payload(""));
 
-    CTPException e = assertThrows(CTPException.class, () -> jwsHelper.getKid(jwsObject));
+    CTPException e = assertThrows(CTPException.class, () -> jwsEncoder.getKid(jwsObject));
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
@@ -116,7 +119,7 @@ public class JWSHelperTest {
 
     JWSObject jwsObject = new JWSObject(jwsHeader, new Payload(""));
 
-    CTPException e = assertThrows(CTPException.class, () -> jwsHelper.getKid(jwsObject));
+    CTPException e = assertThrows(CTPException.class, () -> jwsEncoder.getKid(jwsObject));
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
@@ -133,7 +136,7 @@ public class JWSHelperTest {
 
     Key key = new Key();
     key.setValue(SIGNING_PUBLIC_VALUE);
-    CTPException e = assertThrows(CTPException.class, () -> jwsHelper.decode(jwsObject, key));
+    CTPException e = assertThrows(CTPException.class, () -> jwsDecoder.decode(jwsObject, key));
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
@@ -151,7 +154,7 @@ public class JWSHelperTest {
     Key key = new Key();
     // Need a public key to verify JWS
     key.setValue(SIGNING_PRIVATE_VALUE);
-    CTPException e = assertThrows(CTPException.class, () -> jwsHelper.decode(jwsObject, key));
+    CTPException e = assertThrows(CTPException.class, () -> jwsDecoder.decode(jwsObject, key));
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 }

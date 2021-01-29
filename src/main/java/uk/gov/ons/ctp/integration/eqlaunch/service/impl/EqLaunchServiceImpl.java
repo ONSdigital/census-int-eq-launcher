@@ -17,7 +17,7 @@ import uk.gov.ons.ctp.common.domain.Source;
 import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.common.error.CTPException.Fault;
 import uk.gov.ons.ctp.integration.caseapiclient.caseservice.model.CaseContainerDTO;
-import uk.gov.ons.ctp.integration.eqlaunch.crypto.Codec;
+import uk.gov.ons.ctp.integration.eqlaunch.crypto.JweEncryptor;
 import uk.gov.ons.ctp.integration.eqlaunch.crypto.KeyStore;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchCoreData;
 import uk.gov.ons.ctp.integration.eqlaunch.service.EqLaunchData;
@@ -28,10 +28,10 @@ public class EqLaunchServiceImpl implements EqLaunchService {
   private static final Logger log = LoggerFactory.getLogger(EqLaunchServiceImpl.class);
   private static final String ROLE_FLUSHER = "flusher";
   private static final String CCS = "CCS";
-  private Codec codec;
+  private JweEncryptor codec;
 
-  public EqLaunchServiceImpl(KeyStore keyStore) {
-    this.codec = new Codec(keyStore);
+  public EqLaunchServiceImpl(KeyStore keyStore) throws CTPException {
+    this.codec = new JweEncryptor(keyStore, "authentication");
   }
 
   @Override
@@ -47,7 +47,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
             launchData.getAccountServiceUrl(),
             launchData.getAccountServiceLogoutUrl());
 
-    return codec.encrypt(payload, "authentication");
+    return codec.encrypt(payload);
   }
 
   @Override
@@ -56,7 +56,7 @@ public class EqLaunchServiceImpl implements EqLaunchService {
     Map<String, Object> payload =
         createPayloadMap(launchData, null, null, ROLE_FLUSHER, null, null);
 
-    return codec.encrypt(payload, "authentication");
+    return codec.encrypt(payload);
   }
 
   /**

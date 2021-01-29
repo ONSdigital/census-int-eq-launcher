@@ -11,7 +11,7 @@ import org.junit.Test;
 import uk.gov.ons.ctp.common.error.CTPException;
 
 /** Unit tests of the encryption and decryption of a payload */
-public class CodecTest {
+public class JweEncyptorTest {
 
   private static final String SIGNING_PUBLIC_SHA1 = "f008897e548d5c4fb9271e5a85f6fc4759301f26";
 
@@ -231,8 +231,8 @@ public class CodecTest {
 
   @Test
   public void testEncryptDecrypt() throws Exception {
-    EQJOSEProvider encryptingCodec = new Codec(new KeyStore(JWTKEYS_ENCRYPTION));
-    EQJOSEProvider decryptingCodec = new Codec(new KeyStore(JWTKEYS_DECRYPTION));
+    JweEncryptor encryptor = new JweEncryptor(new KeyStore(JWTKEYS_ENCRYPTION), "encryption");
+    JweDecryptor decryptor = new JweDecryptor(new KeyStore(JWTKEYS_DECRYPTION));
 
     Map<String, Object> test = new HashMap<String, Object>();
     test.put("jti", "de7af250-7390-4f8c-877f-8b71e1a1d983");
@@ -257,8 +257,8 @@ public class CodecTest {
     test.put("form_type", "H");
     test.put("survey", "CENSUS");
 
-    String jwe = encryptingCodec.encrypt(test, "encryption");
-    String decrypt = decryptingCodec.decrypt(jwe);
+    String jwe = encryptor.encrypt(test);
+    String decrypt = decryptor.decrypt(jwe);
 
     @SuppressWarnings("unchecked")
     HashMap<String, String> result = new ObjectMapper().readValue(decrypt, HashMap.class);
@@ -268,11 +268,9 @@ public class CodecTest {
   @Test
   public void testEncryptNoPrivateKey() throws Exception {
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION_NO_PRIVATE);
-    EQJOSEProvider codec = new Codec(keyStoreEncryption);
 
     CTPException e =
-        assertThrows(
-            CTPException.class, () -> codec.encrypt(new HashMap<String, Object>(), "encryption"));
+        assertThrows(CTPException.class, () -> new JweEncryptor(keyStoreEncryption, "encryption"));
 
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
@@ -280,35 +278,33 @@ public class CodecTest {
   @Test
   public void testEncryptNoPublicKey() throws Exception {
     KeyStore keyStoreEncryption = new KeyStore(JWTKEYS_ENCRYPTION_NO_PUBLIC);
-    EQJOSEProvider codec = new Codec(keyStoreEncryption);
 
     CTPException e =
-        assertThrows(
-            CTPException.class, () -> codec.encrypt(new HashMap<String, Object>(), "encryption"));
+        assertThrows(CTPException.class, () -> new JweEncryptor(keyStoreEncryption, "encryption"));
 
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
   @Test
   public void testDecryptNoPrivateKey() throws Exception {
-    EQJOSEProvider encryptingCodec = new Codec(new KeyStore(JWTKEYS_ENCRYPTION));
-    EQJOSEProvider decryptingCodec = new Codec(new KeyStore(JWTKEYS_DECRYPTION_NO_PRIVATE));
+    JweEncryptor encryptor = new JweEncryptor(new KeyStore(JWTKEYS_ENCRYPTION), "encryption");
+    JweDecryptor decryptor = new JweDecryptor(new KeyStore(JWTKEYS_DECRYPTION_NO_PRIVATE));
 
-    String jwe = encryptingCodec.encrypt(new HashMap<String, Object>(), "encryption");
+    String jwe = encryptor.encrypt(new HashMap<String, Object>());
 
-    CTPException e = assertThrows(CTPException.class, () -> decryptingCodec.decrypt(jwe));
+    CTPException e = assertThrows(CTPException.class, () -> decryptor.decrypt(jwe));
 
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
 
   @Test
   public void testDecryptNoPublicKey() throws Exception {
-    EQJOSEProvider encryptingCodec = new Codec(new KeyStore(JWTKEYS_ENCRYPTION));
-    EQJOSEProvider decryptingCodec = new Codec(new KeyStore(JWTKEYS_DECRYPTION_NO_PUBLIC));
+    JweEncryptor encryptor = new JweEncryptor(new KeyStore(JWTKEYS_ENCRYPTION), "encryption");
+    JweDecryptor decryptor = new JweDecryptor(new KeyStore(JWTKEYS_DECRYPTION_NO_PUBLIC));
 
-    String jwe = encryptingCodec.encrypt(new HashMap<String, Object>(), "encryption");
+    String jwe = encryptor.encrypt(new HashMap<String, Object>());
 
-    CTPException e = assertThrows(CTPException.class, () -> decryptingCodec.decrypt(jwe));
+    CTPException e = assertThrows(CTPException.class, () -> decryptor.decrypt(jwe));
 
     assertEquals(CTPException.Fault.SYSTEM_ERROR, e.getFault());
   }
