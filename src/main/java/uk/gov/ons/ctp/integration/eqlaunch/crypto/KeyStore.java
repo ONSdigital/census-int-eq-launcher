@@ -51,9 +51,7 @@ public class KeyStore {
   public Optional<Key> getKeyForPurposeAndType(String purpose, String type) {
 
     List<Key> matching =
-        keys.getKeys()
-            .values()
-            .stream()
+        keys.getKeys().values().stream()
             .filter(x -> (x.getPurpose().equals(purpose) && x.getType().equals(type)))
             .collect(Collectors.toList());
 
